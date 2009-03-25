@@ -50,3 +50,16 @@ EOSQT
 
 __END__
 
+=head1 INSTRUCTIONS FOR THE DEVELOPER
+
+=over 2
+
+=item * Set the environment variables:
+
+  $ source etc/setenvforeu
+
+=item * Before building anything, run 
+   
+   make -f makepods
+
+=back

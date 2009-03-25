@@ -1,8 +1,7 @@
-* path language: allow for expressions depending on the target machine
+* several inputs
 * tests
 * finer grain control of cssh
 * substitute hashes and arrays by references
-* Configuration from .csshrc: cluster en HOME
 * Maximum number of processes
 * cssh with specification of command
 
