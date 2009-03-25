@@ -1,0 +1,10 @@
+=head1 COPYRIGHT AND LICENSE
+[% USE year = date(format = '%Y') %]
+
+Copyright (C) 2009-[%- year.format -%] by Casiano Rodriguez-Leon
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.8.8 or,
+at your option, any later version of Perl 5 you may have available.
+
+

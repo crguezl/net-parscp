@@ -1,0 +1,5 @@
+export DEVELOPER=casiano
+export TESTMACHINES=beo
+export PERL5LIB=$PERL5LIB:`pwd`/lib
+export PATH=${PATH}:`pwd`/script
+export MANPATH=${MANPATH}:`pwd`/blib
