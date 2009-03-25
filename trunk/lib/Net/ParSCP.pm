@@ -54,14 +54,14 @@ sub read_configfile {
   if (-r $configfile) {
     open(my $f, $configfile);
 
-    # skip comments and white lines
+    # We are interested in lines matching 'option = values'
     my @desc = grep { m{^\s*(\S+)\s*=\s*(.*)\s*} } <$f>;
     close($f);
     chomp(@desc);
 
     my %config = map { m{^\s*(\S+)\s*=\s*(.*)\s*} } @desc;
 
-    # Get the clusters
+    # Get the clusters. It starts 'cluster = ... '
     my $regexp = $config{clusters};
 
     # create regexp (^beo\s*=)|(^be\s*=)
@@ -86,12 +86,12 @@ sub parse_configfile {
     next if /^\s*(#.*)?$/;
 
     my ($cluster, $members) = split /\s*=\s*/;
-    die "Error in configuration file $configfile invalid cluster name $cluster" unless $cluster =~ /[\w.]+/;
+    die "Error in configuration file $configfile invalid cluster name $cluster" unless $cluster =~ /^[\w.]+$/;
 
     my @members = split /\s+/, $members;
 
     for my $m (@members) {
-      die "Error in configuration file $configfile invalid name $m" unless $m =~ /[\@\w.]+$/;
+      die "Error in configuration file $configfile invalid name $m" unless $m =~ /^[\@\w.]+$/;
       $cluster{$m} = Set::Scalar->new($m) unless exists $cluster{$m};
     }
     $cluster{$cluster} = Set::Scalar->new(@members);
@@ -286,10 +286,16 @@ sub spawn_secure_copies {
     }
 
     for my $m ($set->members) {
-      warn "Executing system command:\n\t$scp $scpoptions $sourcefile $m:$path\n" if $VERBOSE;
+      # @ is a macro and means "the name of the machine"
+      my $cp = $path;
+      $cp =~ s/@=/$m/g;
+
+      warn "Executing system command:\n\t$scp $scpoptions $sourcefile $m:$cp\n" if $VERBOSE;
+
       my $pid;
-      $pid{$m} = $pid = open(my $p, "$scp $scpoptions $sourcefile $m:$path 2>&1 |");
-      warn "Can't execute scp $scpoptions $sourcefile $m:$path", next unless defined($pid);
+      $pid{$m} = $pid = open(my $p, "$scp $scpoptions $sourcefile $m:$cp 2>&1 |");
+      warn "Can't execute scp $scpoptions $sourcefile $m:$cp", next unless defined($pid);
+
       $proc{0+$p} = $m;
       $readset->add($p);
     }
