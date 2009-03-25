@@ -43,6 +43,9 @@ directory or it looks for the cluster C<~/.csshrc> used by C<cssh>:
       cluster2 = machine2 machine4 machine5
       num = 193.140.101.175 193.140.101.246
 
+See C<man cssh> to find out how to describe a cluster in the
+C<~/.csshrc> file.
+
 =head2 Cluster Expressions
 
 =over 2
