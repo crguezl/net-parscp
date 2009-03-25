@@ -1,0 +1,19 @@
+COMPONENTS = tt2/author tt2/copyright tt2/list tt2/synopsis
+TEMPLATES = tt2/parpush.tt2 tt2/ParSCP.tt2
+
+pods: lib/Net/ParSCP.pod script/parpush.pod
+
+lib/Net/ParSCP.pod: tt2/ParSCP.tt2
+	cd tt2; tpage ParSCP.tt2 > ../$@
+	
+script/parpush.pod: tt2/parpush.tt2 ${COMPONENTS}
+	cd tt2; tpage parpush.tt2 > ../$@
+
+tt2/ParSCP.tt2:${COMPONENTS}
+
+tt2/parpush.tt2: ${COMPONENTS}
+
+.PHONY : clean
+clean:
+	rm -f lib/Net/ParSCP.pod script/parpush.pod
+

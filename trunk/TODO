@@ -1,0 +1,17 @@
+* fine-grain control of cssh
+* google-code
+* substitute hashes and arrays by references
+* documentation
+* tests
+* Configuration from .csshrc: cluster en HOME
+* Maximum number of processes
+* cssh with specification of command
+* Efficiency: rsync?
+* Efficiency: tree of processes?
+* Error and exception control
+   -- CTRL-C
+     Kill the pending processes
+   --SIGPIPE
+     Report error
+   -- Control errors returned by scp
+* Control cssh with a finer grain
