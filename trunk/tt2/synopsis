@@ -1,10 +1,13 @@
-  # You need to set first a configuration file:
+  # You need to set first a configuration file or have a 
+  # $HOME/.csshrc file with the cluster option defined:
+
       $ cat Cluster
       cluster1 = machine1 machine2 machine3
       cluster2 = machine2 machine4 machine5
       num = 193.140.101.175 193.140.101.246
 
   # Copy 'sourcefile' to the union of cluster1 and cluster2
+
   $ parpush sourcefile  cluster1+cluster2:/tmp 
 
   # Copy 'sourcefile' to the intersection of cluster1 and cluster2
@@ -21,7 +24,9 @@
   $ parpush sourcefile  cluster1-cluster2:/tmp/tf@=.txt
 
   # A more complicated formula:
+
   $ parpush 'sourcefile'  '(cluster1+cluster2)-num:/tmp'
+
   # Though 'machine2' is 193.140.101.175, they aren't considered
   # equal by parpush. The file will be transferred to 'machine2'
 
@@ -29,9 +34,27 @@
   # Send 'sourcefile' to machines in cluster1 but not in cluster2 
   # and store it in /tmp. Send it to machines in cluster2 but not cluster1
   # and store it at the home directory
+
   $ parpush sourcefile  cluster1-cluster2:/tmp  cluster2-cluster1:
 
-  # Copy from remote machine 'orion' file Makefile.PL to
-  # all the machines in cluster 'beo' but 'orion'
-  $ parpush orion:Makefile.PL beo-orion:
+  # Copy from remote machine 'machine1' the file 'file.txt' to
+  # all the machines in 'cluster1' other than 'machine1':
+  $ parpush machine1:file.txt cluster1-machine1:
+
+  # You can also transfer several files from different machines to
+  # some set of machines:
+
+  $ parpush  'machine1:file1.txt machine2:file2.txt' cluster1-machine1-machine2:
+
+  # protect the source with single quotes. Clusters aren't allowed
+  # in the sourcefile section. A command like this gives an error:
+
+  $ parpush  'cluster1:file.txt' machine1+machine2:
+
+  # A combination of local and remote files can be sent
+  
+  $ parpush  'localfile.txt machine4:remote.txt' cluster1-machine1-machine2:
+
+  # sends 'localfile.txt' in the local machine and 'remote.txt' in 'machine4'
+  # to machine3
 
