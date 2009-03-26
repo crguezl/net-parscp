@@ -31,4 +31,7 @@
   # and store it at the home directory
   $ parpush sourcefile  cluster1-cluster2:/tmp  cluster2-cluster1:
 
+  # Copy from remote machine 'orion' file Makefile.PL to
+  # all the machines in cluster 'beo' but 'orion'
+  $ parpush orion:Makefile.PL beo-orion:
 
