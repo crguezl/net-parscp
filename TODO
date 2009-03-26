@@ -1,3 +1,4 @@
+* automatize cluster file creation
 * options for ssh depending on the machine cluster
      -S clusterexp '-v'
 * allow source to be remote (only one machine)

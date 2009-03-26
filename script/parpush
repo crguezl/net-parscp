@@ -23,10 +23,14 @@ my $result = GetOptions(
              );
 
 my $sourcefile = shift;
-usage("Error. Can't find source file\n") unless defined($sourcefile) && -r $sourcefile;
 
+usage("Error. Not defined source file\n") unless defined($sourcefile); 
+
+if ($sourcefile !~ /:/) { # local source file: check for existence
+  usage("Error. Can't read $sourcefile\n") unless -r $sourcefile;
+  $scpoptions .= ' -r' if (-d $sourcefile);
+}
 # Set recursive option for scp if source is a directory
-$scpoptions .= ' -r' if (-d $sourcefile);
 
 usage("Error. Provide a destination target!\n") unless @ARGV;
 
