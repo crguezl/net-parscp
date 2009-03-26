@@ -1,3 +1,7 @@
+* options for ssh depending on the machine cluster
+     -S clusterexp '-v'
+* allow source to be remote (only one machine)
+    parpush machine:filepath destinations ..
 * several inputs
 * tests
 * finer grain control of cssh
