@@ -13,6 +13,23 @@ tt2/ParSCP.tt2:${COMPONENTS}
 
 tt2/parpush.tt2: ${COMPONENTS}
 
+################### html ########################
+html: /tmp/parpush.html /tmp/ParSCP.html
+/tmp/parpush.html: script/parpush.pod
+	mpod2html -nowarnings -noverbose -nonavigation -nobanner -noidx -notoc script/parpush.pod  -o $@
+
+/tmp/ParSCP.html: lib/Net/ParSCP.pod
+	mpod2html -nowarnings -noverbose -nonavigation -nobanner -noidx -notoc lib/Net/ParSCP.pod -o $@
+
+################### wiki ########################
+wiki: /tmp/parpush.wiki /tmp/ParSCP.wiki
+
+/tmp/parpush.wiki: script/parpush.pod
+	pod2wiki --style googlecode script/parpush.pod > $@
+
+/tmp/ParSCP.wiki: lib/Net/ParSCP.pod
+	pod2wiki --style googlecode lib/Net/ParSCP.pod > $@
+
 .PHONY : clean
 clean:
 	rm -f lib/Net/ParSCP.pod script/parpush.pod

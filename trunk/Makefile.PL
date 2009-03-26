@@ -4,6 +4,10 @@ use strict;
 
 # the contents of the Makefile that is written.
 
+if (defined($ENV{DEVELOPER}) && ($ENV{DEVELOPER} eq 'casiano')) {
+  system('make -f makepods') and die "Can't build pods!";
+}
+
 my @exe_files = map { "script/$_" } qw{parpush};
 my @LIBS = ( 'lib/Net/ParSCP.pm' );
 
