@@ -27,8 +27,10 @@ my $sourcefile = shift;
 usage("Error. Not defined source file\n") unless defined($sourcefile); 
 
 if ($sourcefile !~ /:/) { # local source file: check for existence
-  usage("Error. Can't read $sourcefile\n") unless -r $sourcefile;
-  $scpoptions .= ' -r' if (-d $sourcefile);
+  my @sourcefile = split /\s+/, $sourcefile;
+  my @nonreadble = grep { !-r $_ } @sourcefile;
+  usage("Error. Can't read @nonreadble\n") if @nonreadble;
+  $scpoptions .= ' -r' if (grep { -d } @sourcefile);
 }
 # Set recursive option for scp if source is a directory
 
