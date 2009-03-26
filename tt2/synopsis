@@ -27,8 +27,9 @@
 
   $ parpush 'sourcefile'  '(cluster1+cluster2)-num:/tmp'
 
-  # Though 'machine2' is 193.140.101.175, they aren't considered
-  # equal by parpush. The file will be transferred to 'machine2'
+  # Though 'machine2' is an alias for 193.140.101.175, they aren't 
+  # considered equal by parpush. The file will be transferred to 
+  # 'machine2'
 
   # Several cluster expressions may appear
   # Send 'sourcefile' to machines in cluster1 but not in cluster2 
