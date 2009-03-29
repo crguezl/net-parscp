@@ -130,6 +130,8 @@ authenticate using your private key
   Last login: Sat Jul  7 13:34:00 2007 from local.machine
   user@remote.machine:~$                                 
 
+=back
+
 =head1 DESCRIPTION
 
 C<parpush> push files and directories across sets of remote machines.
