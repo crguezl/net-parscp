@@ -1,3 +1,4 @@
+* upload to CPAN
 * source files: allow several files protected by quotes
 * automatize cluster file creation
 * options for ssh depending on the machine cluster

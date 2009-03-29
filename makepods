@@ -58,3 +58,11 @@ AUXS=$(addsuffix .aux,$(basename $(PODS)))
 clean:
 	rm -f $(PODS) $(WIKIS) $(HTMLS) $(TEX) $(TOCS) $(PDFS) $(LOGS) $(IDXS) $(AUXS)
 
+################### public ######################
+public:
+	scp ${PDFS} ${PUBLIC_PLACE}
+
+################### debug #######################
+debug:
+	echo $(PODS)
+

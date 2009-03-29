@@ -7,3 +7,4 @@ export TESTMACHINES=beo
 export PERL5LIB=$PERL5LIB:`pwd`/lib
 export PATH=${PATH}:`pwd`/script
 export MANPATH=${MANPATH}:`pwd`/blib
+export PUBLIC_PLACE=pp2@nereida.deioc.ull.es:public_html/net-scp/

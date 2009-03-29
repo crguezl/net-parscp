@@ -132,12 +132,12 @@ Cluster expressions like:
   $0 -s '-v' dir/  cluster1+cluster2:/tmp cluster3:/scratch/
 
 are accepted. The macro C<@=> inside a path expands to the name of the machine.
-To transfer several files protect them with quotes:
+To transfer several files, protect them with quotes:
 
   $0 'file1 machine3:file2' cluster1%cluster2:  
 
 it transfer file1 in the local machine and file2 in machine3 
-to the machines in the simetric difference of clusters cluster1 
+to the machines in the symmetric difference of clusters cluster1 
 and cluster2.
 
 Valid options:
