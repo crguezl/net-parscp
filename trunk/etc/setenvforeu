@@ -1,3 +1,7 @@
+# for info do
+# $ perldoc Makefile.PL
+#
+export COMPONENTS='tt2/author tt2/copyright tt2/list tt2/synopsis'
 export DEVELOPER=casiano
 export TESTMACHINES=beo
 export PERL5LIB=$PERL5LIB:`pwd`/lib

@@ -1,6 +1,6 @@
 # file makepods
-# a 'make' file to build the documentation for Net::ParSCP
-#
+# a generic 'makefile' to build the documentation for any module
+# syntax is gnumake
 
 REGEXP='\.pod$ '
 PODS=$(shell grep ${REGEXP} MANIFEST)
@@ -15,7 +15,6 @@ TEX=$(addsuffix .tex,$(basename $(PODS)))
 
 PDFS=$(addsuffix .pdf,$(basename $(PODS)))
 
-COMPONENTS = tt2/author tt2/copyright tt2/list tt2/synopsis
 TEMPLATES=$(addsuffix .tt2,$(addprefix tt2/,$(PLAIN)))
 
 ################### pod  ########################
