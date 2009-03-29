@@ -8,3 +8,7 @@ lib/Net/ParSCP.pod
 script/parpush
 script/parpush.pod
 examples/Cluster
+examples/automatic_authentication.instructions
+examples/Cluster
+examples/config
+examples/csshrc
