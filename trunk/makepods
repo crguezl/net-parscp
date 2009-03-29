@@ -1,36 +1,61 @@
+# file makepods
+# a 'make' file to build the documentation for Net::ParSCP
+#
+
+REGEXP='\.pod$ '
+PODS=$(shell grep ${REGEXP} MANIFEST)
+
+PLAIN=$(basename $(notdir ${PODS}))
+
+HTMLS=$(addsuffix .html,$(basename $(PODS)))
+
+WIKIS=$(addsuffix .wiki,$(basename $(PODS)))
+
+TEX=$(addsuffix .tex,$(basename $(PODS)))
+
+PDFS=$(addsuffix .pdf,$(basename $(PODS)))
+
 COMPONENTS = tt2/author tt2/copyright tt2/list tt2/synopsis
-TEMPLATES = tt2/parpush.tt2 tt2/ParSCP.tt2
+TEMPLATES=$(addsuffix .tt2,$(addprefix tt2/,$(PLAIN)))
 
-pods: lib/Net/ParSCP.pod script/parpush.pod
+################### pod  ########################
+pods: pod
+pod: ${PODS}
 
-lib/Net/ParSCP.pod: tt2/ParSCP.tt2
-	cd tt2; tpage ParSCP.tt2 > ../$@
+%.pod:$(addprefix tt2/,$@) ${COMPONENTS}
+	tpage --include_path=tt2/ $(addprefix tt2/,$@) > $@
 	
-script/parpush.pod: tt2/parpush.tt2 ${COMPONENTS}
-	cd tt2; tpage parpush.tt2 > ../$@
-
-tt2/ParSCP.tt2:${COMPONENTS}
-
-tt2/parpush.tt2: ${COMPONENTS}
-
 ################### html ########################
-html: /tmp/parpush.html /tmp/ParSCP.html
-/tmp/parpush.html: script/parpush.pod
-	mpod2html -nowarnings -noverbose -nonavigation -nobanner -noidx -notoc script/parpush.pod  -o $@
-
-/tmp/ParSCP.html: lib/Net/ParSCP.pod
-	mpod2html -nowarnings -noverbose -nonavigation -nobanner -noidx -notoc lib/Net/ParSCP.pod -o $@
+htmls: html
+html: $(HTMLS)
+%.html: %.pod
+	mpod2html -nowarnings -noverbose -nonavigation -nobanner -noidx -notoc $<  -o $@
 
 ################### wiki ########################
-wiki: /tmp/parpush.wiki /tmp/ParSCP.wiki
+wikis: wiki
+wiki: $(WIKIS)
 
-/tmp/parpush.wiki: script/parpush.pod
-	pod2wiki --style googlecode script/parpush.pod > $@
+%.wiki: %.pod
+	pod2wiki --style googlecode $< > $@
 
-/tmp/ParSCP.wiki: lib/Net/ParSCP.pod
-	pod2wiki --style googlecode lib/Net/ParSCP.pod > $@
+################### latex #######################
+tex: $(TEX)
+%.tex:%.pod
+	pod2latex -full $< -out $@
 
+###################  pdf  #######################
+pdfs:pdf
+pdf: $(PDFS)
+%.pdf:%.tex
+	pdflatex -output-directory $(dir $<) $< 
+
+################### clean #######################
+# TEX auxiliary files *.toc ..
+TOCS=$(addsuffix .toc,$(basename $(PODS)))
+LOGS=$(addsuffix .log,$(basename $(PODS)))
+IDXS=$(addsuffix .idx,$(basename $(PODS)))
+AUXS=$(addsuffix .aux,$(basename $(PODS)))
 .PHONY : clean
 clean:
-	rm -f lib/Net/ParSCP.pod script/parpush.pod
+	rm -f $(PODS) $(WIKIS) $(HTMLS) $(TEX) $(TOCS) $(PDFS) $(LOGS) $(IDXS) $(AUXS)
 
