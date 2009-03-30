@@ -336,7 +336,7 @@ sub parpush {
 
   my $okh = wait_for_answers($readset, $proc);
 
-  return wantarray? $okh : ($okh, $pid);
+  return wantarray? ($okh, $pid) : $okh;
 }
 
 1;
