@@ -1,12 +1,7 @@
-* upload to CPAN
-* source files: allow several files protected by quotes
+* tests
 * automatize cluster file creation
 * options for ssh depending on the machine cluster
      -S clusterexp '-v'
-* allow source to be remote (only one machine)
-    parpush machine:filepath destinations ..
-* several inputs
-* tests
 * finer grain control of cssh
 * substitute hashes and arrays by references
 * Maximum number of processes
