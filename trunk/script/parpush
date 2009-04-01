@@ -4,7 +4,7 @@ use Getopt::Long;
 use Net::ParSCP;
 
 # Command line options
-my $configfile = "Cluster";
+my $configfile = "";
 my $scp = 'scp';
 my $scpoptions = '';
 my $maxprocesses = 8; # control the maximum number of processes at any time
