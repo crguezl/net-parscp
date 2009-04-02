@@ -276,15 +276,15 @@ sub spawn_secure_copies {
   my (%pid, %proc);
   for (@destination) {
 
-    unless (/:/) {
-      warn "Error. Destination $_ must have a colon (:). Skipping transfer.\n";
+    unless (/^[^:]+:[^:]+$/) {
+      warn "Error. Destination '$_' must have just one colon (:). Skipping transfer.\n";
       next;
     }
 
     my ($clusterexp, $path) = split /\s*:\s*/;
 
     unless (length($clusterexp)) {
-      warn "Error. Destination $_ must have a cluster specification. Skipping transfer.\n";
+      warn "Error. Destination '$_' must have a cluster specification. Skipping transfer.\n";
       next;
     }
 
