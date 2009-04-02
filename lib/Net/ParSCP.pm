@@ -294,7 +294,9 @@ sub spawn_secure_copies {
     my $set = eval $clusterexp;
 
     unless (defined($set) && ref($set) && $set->isa('Set::Scalar')) {
-      warn "Error. Expression $clusterexp has errors. Skipping.\n$@\n";
+      $clusterexp =~ s/_\d+_//g;
+      $clusterexp =~ s/[()]//g;
+      warn "Error. Expression '$clusterexp' has errors. Skipping.\n";
       next;
     }
 
