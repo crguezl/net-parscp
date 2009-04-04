@@ -1,3 +1,20 @@
+* remotetest, tests
+
+* factorize 
+
+* log support
+
+* Options to query the data base:
+        parpush -q beow
+        > beowulf europa orion tegastaste
+
+* Options to build regexp clusters
+ 
+        parpush source.tar.gz  cluster1+'/^a/':/tmp
+        parpush source.tar.gz  cluster1+'cluster2=~/^a/':/tmp
+
+* Macro for source machine
+
 * Option to execute command after the transference:
         parpush -e 'tar xvzf source.tar.gz' source.tar.gz  cluster1+cluster2:/tmp 
   environment variables will be set to refer to sourcefiles, sourcemachines, etc.
@@ -5,7 +22,6 @@
         parpush source.tar.gz  cluster1+cluster2:/tmp  -e 'tar xvzf $SF1; cd somedir; perlmantra'
         parpush source.tar.gz  cluster1+cluster2:/tmp  -te 'perlmantra' # remote copy and execute
 
-* tests
 * automatize cluster file creation
 * options for ssh depending on the machine cluster
      -S clusterexp '-v'

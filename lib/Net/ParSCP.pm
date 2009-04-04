@@ -276,7 +276,7 @@ sub spawn_secure_copies {
   my (%pid, %proc);
   for (@destination) {
 
-    unless (/^[^:]+:[^:]+$/) {
+    unless (/^[^:]+:[^:]*$/) {
       warn "Error. Destination '$_' must have just one colon (:). Skipping transfer.\n";
       next;
     }

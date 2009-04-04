@@ -66,3 +66,10 @@ public:
 debug:
 	echo $(PODS)
 
+remotetestx:
+	PP='-x' make -f makepods remotetest
+
+remotetest:
+	cd ..; tar --exclude=blib --exclude=.svn --create --verbose --gzip --file /tmp/net-parscp.tgz net-parscp/
+	parpush $(PP) '/tmp/net-parscp.tgz' beow:/tmp/
+
