@@ -1,0 +1,11 @@
+
+=over 2
+
+[%- FOREACH ref IN biblio %]
+
+=item * [% ref %]
+
+[% END -%]
+
+=back
+

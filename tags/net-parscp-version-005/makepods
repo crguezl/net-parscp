@@ -1,0 +1,75 @@
+# file makepods
+# a generic 'makefile' to build the documentation for any module
+# syntax is gnumake
+
+REGEXP='\.pod$ '
+PODS=$(shell grep ${REGEXP} MANIFEST)
+
+PLAIN=$(basename $(notdir ${PODS}))
+
+HTMLS=$(addsuffix .html,$(basename $(PODS)))
+
+WIKIS=$(addsuffix .wiki,$(basename $(PODS)))
+
+TEX=$(addsuffix .tex,$(basename $(PODS)))
+
+PDFS=$(addsuffix .pdf,$(basename $(PODS)))
+
+TEMPLATES=$(addsuffix .tt2,$(addprefix tt2/,$(PLAIN)))
+
+################### pod  ########################
+pods: pod
+pod: ${PODS}
+
+%.pod:$(addprefix tt2/,$@) ${COMPONENTS}
+	tpage --include_path=tt2/ $(addprefix tt2/,$@) > $@
+	
+################### html ########################
+htmls: html
+html: $(HTMLS)
+%.html: %.pod
+	mpod2html -nowarnings -noverbose -nonavigation -nobanner -noidx -notoc $<  -o $@
+
+################### wiki ########################
+wikis: wiki
+wiki: $(WIKIS)
+
+%.wiki: %.pod
+	pod2wiki --style googlecode $< > $@
+
+################### latex #######################
+tex: $(TEX)
+%.tex:%.pod
+	pod2latex -full $< -out $@
+
+###################  pdf  #######################
+pdfs:pdf
+pdf: $(PDFS)
+%.pdf:%.tex
+	pdflatex -output-directory $(dir $<) $< 
+
+################### clean #######################
+# TEX auxiliary files *.toc ..
+TOCS=$(addsuffix .toc,$(basename $(PODS)))
+LOGS=$(addsuffix .log,$(basename $(PODS)))
+IDXS=$(addsuffix .idx,$(basename $(PODS)))
+AUXS=$(addsuffix .aux,$(basename $(PODS)))
+.PHONY : clean
+clean:
+	rm -f $(PODS) $(WIKIS) $(HTMLS) $(TEX) $(TOCS) $(PDFS) $(LOGS) $(IDXS) $(AUXS)
+
+################### public ######################
+public:
+	scp ${PDFS} ${PUBLIC_PLACE}
+
+################### debug #######################
+debug:
+	echo $(PODS)
+
+remotetestx:
+	PP='-x' make -f makepods remotetest
+
+remotetest:
+	cd ..; tar --exclude=blib --exclude=.svn --create --verbose --gzip --file /tmp/net-parscp.tgz net-parscp/
+	parpush $(PP) '/tmp/net-parscp.tgz' beo:/tmp/
+
