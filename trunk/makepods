@@ -73,3 +73,13 @@ remotetest:
 	cd ..; tar --exclude=blib --exclude=.svn --create --verbose --gzip --file /tmp/net-parscp.tgz net-parscp/
 	parpush $(PP) '/tmp/net-parscp.tgz' beo:/tmp/
 
+# run make -f makepods tag VERSION=005
+tag:
+ifdef VERSION
+	svn cp https://net-parscp.googlecode.com/svn/trunk https://net-parscp.googlecode.com/svn/tags/net-parscp-version-$(VERSION)
+else
+	@echo 'Define VERSION if you want to tag the project, i.e.:' 
+	@echo '			make -f makepods tag VERSION=006'
+endif
+ 	
+
