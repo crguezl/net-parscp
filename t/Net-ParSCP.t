@@ -13,11 +13,11 @@ BEGIN { use_ok('Net::ParSCP') };
 SKIP: {
   skip("Developer test", 7) unless ($ENV{DEVELOPER} && -x "script/parpush" && ($^O =~ /nux$/));
 
-     my $output = `script/parpush MANIFEST  beo-chum:/tmp 2>&1`;
-     like($output, qr/Error. Identifier \(chum\) does not correspond/, 'Illegal machine name');
+     my $output = `script/parpush -v MANIFEST  beo-chum:/tmp 2>&1`;
+     like($output, qr/(identifier \(chum\) does not correspond)|(ssh:.*not known)/, 'Illegal machine name');
 
-     $output = `script/parpush MANIFEST  trutu-orion:/tmp 2>&1`;
-     like($output, qr/Error. Identifier \(trutu\) does not correspond/, 'Illegal cluster name');
+     $output = `script/parpush -v MANIFEST  trutu-orion:/tmp 2>&1`;
+     like($output, qr/(identifier \(trutu\) does not correspond)|(ssh:.*not known)/, 'Illegal cluster name');
 
      $output = `script/parpush -v MANIFEST  beo-europa/tmp 2>&1`;
      like($output, qr{Destination 'beo-europa/tmp' must have.*colon}, 'colon missed');
