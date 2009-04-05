@@ -71,7 +71,7 @@ remotetestx:
 
 remotetest:
 	cd ..; tar --exclude=blib --exclude=.svn --create --verbose --gzip --file /tmp/net-parscp.tgz net-parscp/
-	parpush $(PP) '/tmp/net-parscp.tgz' beo:/tmp/
+	parpush $(PP) '/tmp/net-parscp.tgz maketest' eo:/tmp/
 
 # run make -f makepods tag VERSION=005
 tag:
