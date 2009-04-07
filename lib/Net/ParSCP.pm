@@ -4,6 +4,7 @@ use warnings;
 
 use Set::Scalar;
 use IO::Select;
+#use Sys::Hostname;
 
 require Exporter;
 
@@ -17,7 +18,7 @@ our @EXPORT = qw(
   $VERBOSE
 );
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 our $VERBOSE = 0;
 
 # Create methods for each defined machine or cluster
@@ -274,7 +275,30 @@ sub spawn_secure_copies {
   my $scpoptions = $arg{scpoptions} || '';
   my $sourcefile = $arg{sourcefile};
 
-  my (%pid, %proc);
+  # hash source: keys: source machines. values: lists of source paths for that machine
+  my (%pid, %proc, %source);
+
+  # @# stands for the source machine: decompose the transfer, one per source machine
+  if ("@destination" =~ /@#/) { 
+    # find out what source machines are involved 
+    my $nowhitenocolons = '(?:[^\s:]|\\\s)+'; # escaped spaces are allowed
+    my @externalmachines = $sourcefile =~ /($nowhitenocolons):($nowhitenocolons)/g;
+    my @localpaths = $sourcefile =~ /(?:^|\s) # begin or space
+                                     ($nowhitenocolons)
+                                     (?:\s|$) # end or space
+                                    /xg;
+    
+    @{$source{''}} = [ @localpaths ] if @localpaths; # '' is the local machine
+    while (my ($machine, $path) = splice(@externalmachines, 0, 2)) {
+      if (exists $source{$machine} ) {
+        push @{$source{$machine}}, $path;
+      }
+      else {
+        $source{$machine} = [ $path ]
+      }
+    }
+  }
+
   for (@destination) {
 
     my ($clusterexp, $path);
@@ -283,18 +307,15 @@ sub spawn_secure_copies {
       next;
     }
 
-    if ($1) {
+    if ($1) {  # There is a target machine
       ($clusterexp, $path) = split /\s*:\s*/;
     }
-    else {
+    else { # No target cluster: destiny is the local machine
       ($clusterexp, $path) = ('', $2);
       $scpoptions .= '-r';
-      $pid{localhost} = open(my $p, "$scp $scpoptions $sourcefile $path 2>&1 |");
-      next;
-    }
 
-    unless (length($clusterexp)) {
-      warn "Error. Destination '$_' must have a cluster specification. Skipping transfer.\n";
+      # TODO: decompose if @#
+      $pid{localhost} = open(my $p, "$scp $scpoptions $sourcefile $path 2>&1 |");
       next;
     }
 
@@ -315,18 +336,35 @@ sub spawn_secure_copies {
     }
 
     for my $m ($set->members) {
-      # @ is a macro and means "the name of the machine"
+      # @= is a macro and means "the name of the destiny machine"
       my $cp = $path;
       $cp =~ s/@=/$m/g;
 
-      warn "Executing system command:\n\t$scp $scpoptions $sourcefile $m:$cp\n" if $VERBOSE;
+      if ($cp =~ /@#/ && %source) {
+        # @# stands for source machine: decompose transfer
+        for my $sm (keys %source) {
+          my $sf = $sm? "$sm:@{$source{$sm}}" : "@{$source{$sm}}"; # $sm: source machine
+          my $fp = $cp;                   # $fp: path customized for this source machine
+          $fp =~ s/@#/$sm/g;
+          warn "Executing system command:\n\t$scp $scpoptions $sf $m:$fp\n" if $VERBOSE;
+          my $pid;
+          $pid{$m} = $pid = open(my $p, "$scp $scpoptions $sf $m:$fp 2>&1 |");
+          warn "Can't execute scp $scpoptions $sourcefile $m:$fp", next unless defined($pid);
 
-      my $pid;
-      $pid{$m} = $pid = open(my $p, "$scp $scpoptions $sourcefile $m:$cp 2>&1 |");
-      warn "Can't execute scp $scpoptions $sourcefile $m:$cp", next unless defined($pid);
+          $proc{0+$p} = $m;
+          $readset->add($p);
+        }
+      }
+      else {
+        warn "Executing system command:\n\t$scp $scpoptions $sourcefile $m:$cp\n" if $VERBOSE;
 
-      $proc{0+$p} = $m;
-      $readset->add($p);
+        my $pid;
+        $pid{$m} = $pid = open(my $p, "$scp $scpoptions $sourcefile $m:$cp 2>&1 |");
+        warn "Can't execute scp $scpoptions $sourcefile $m:$cp", next unless defined($pid);
+
+        $proc{0+$p} = $m;
+        $readset->add($p);
+      }
     }
   }
 
