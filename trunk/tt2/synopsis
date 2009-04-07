@@ -81,3 +81,10 @@
   # in machine3. File 'file.txt' in machine2 will be copied to 
   # file '/tmp/file.txt.machine2' in machine3.
 
+  $ parpush 'machine1:file.txt machine2:file.txt' :/tmp/file_txt.@#  
+
+  # The macro '@#' stands for the "source machine". Thus, in the example
+  # above file 'file.txt' in machine1 will be copied to file '/tmp/file.txt.machine1'
+  # in the local machine. File 'file.txt' in machine2 will be copied to 
+  # file '/tmp/file.txt.machine2' in the local machine
+
