@@ -72,7 +72,17 @@ debug:
 remotetestx:
 	PP='-x' make -f makepods remotetest
 
+TARGETDIR=
 remotetest:
+	cd .. && \
+	export TMPFILE=`mktemp -d /tmp/parscp_XXXXXXXXXX` && \
+	# To escape make substitution use $$TMPFILE instead of $TMPFILE\
+	tar --exclude=blib --exclude=.svn --create --verbose --gzip --file $$TMPFILE/net-parscp.tgz net-parscp/ &&\
+	cp net-parscp/maketest $$TMPFILE/ &&\
+	parpush $(PP) -v '$$TMPFILE/*' bo:$(TARGETDIR) &&\
+	rm -fR $$TMPFILE/
+
+anotherremotetest:
 	cd ..; tar --exclude=blib --exclude=.svn --create --verbose --gzip --file /tmp/net-parscp.tgz net-parscp/
 	parpush $(PP) '/tmp/net-parscp.tgz maketest' eo:/tmp/
 
