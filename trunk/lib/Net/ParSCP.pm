@@ -314,8 +314,26 @@ sub spawn_secure_copies {
       ($clusterexp, $path) = ('', $2);
       $scpoptions .= '-r';
 
-      # TODO: decompose if @#
-      $pid{localhost} = open(my $p, "$scp $scpoptions $sourcefile $path 2>&1 |");
+      if ($path =~ /@#/ && %source) {
+        # @# stands for source machine: decompose transfer
+        for my $sm (keys %source) {
+          my $sf = $sm? "$sm:@{$source{$sm}}" : "@{$source{$sm}}"; # $sm: source machine
+          my $fp = $path;                 # $fp: path customized for this source machine
+          $fp =~ s/@#/$sm/g;
+          warn "Executing system command:\n\t$scp $scpoptions $sf $fp\n" if $VERBOSE;
+          my $pid;
+          $pid{localhost} = $pid = open(my $p, "$scp $scpoptions $sf $fp 2>&1 |");
+          warn "Can't execute scp $scpoptions $sourcefile $fp", next unless defined($pid);
+
+          $proc{0+$p} = 'localhost';
+          $readset->add($p);
+        }
+      }
+      else {
+        $pid{localhost} = open(my $p, "$scp $scpoptions $sourcefile $path 2>&1 |");
+        $proc{0+$p} = 'localhost';
+        $readset->add($p);
+      }
       next;
     }
 
