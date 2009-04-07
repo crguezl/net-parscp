@@ -1,13 +1,12 @@
 #!/bin/bash
-cd /tmp/
-rm -fR /tmp/net-parscp/
-tar xvzf /tmp/net-parscp.tgz
-cd net-parscp
-export DEVELOPER=casiano
-export TESTMACHINES=beo
-perl Makefile.PL
-make veryclean
-perl Makefile.PL
-make
+rm -fR net-parscp/ && \
+tar xvzf net-parscp.tgz && \
+cd net-parscp &&\
+export DEVELOPER=casiano &&\
+export TESTMACHINES=bo &&\
+perl Makefile.PL &&\
+make veryclean &&\
+perl Makefile.PL &&\ 
+make &&\
 make test TEST_VERBOSE=1
 

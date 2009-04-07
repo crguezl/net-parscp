@@ -1,3 +1,5 @@
+* add option that asks if exists in the remote side  (like -i in cp)
+
 * option -u like in cssh?
 
 * I believe there is a bug when a machine is target several times
