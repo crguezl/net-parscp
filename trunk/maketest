@@ -9,5 +9,5 @@ perl Makefile.PL
 make veryclean
 perl Makefile.PL
 make
-make test
+make test TEST_VERBOSE=1
 
