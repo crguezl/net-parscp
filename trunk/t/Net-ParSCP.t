@@ -5,6 +5,8 @@
 
 # change 'tests => 1' to 'tests => last_test_to_print';
 
+use warnings;
+use strict;
 use Test::More tests => 13;
 BEGIN { use_ok('Net::ParSCP') };
 
@@ -44,6 +46,7 @@ SKIP: {
      ok(-e '/tmp/.bashrc', 'remote file transferred');
      ok(-x '/tmp/tutu', 'remote dir transferred');
      ok(!$?, 'remote to local: status 0');
+
 }
 
 
