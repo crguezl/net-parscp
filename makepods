@@ -17,6 +17,8 @@ PDFS=$(addsuffix .pdf,$(basename $(PODS)))
 
 TEMPLATES=$(addsuffix .tt2,$(addprefix tt2/,$(PLAIN)))
 
+TT2PODS=$(addprefix tt2/,$(PODS))
+
 ################### pod  ########################
 pods: pod
 pod: ${PODS}
@@ -65,6 +67,7 @@ public:
 ################### debug #######################
 debug:
 	echo $(PODS)
+	echo $(TT2PODS)
 
 remotetestx:
 	PP='-x' make -f makepods remotetest
