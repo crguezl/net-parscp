@@ -4,6 +4,7 @@ use warnings;
 
 use Set::Scalar;
 use IO::Select;
+use Pod::Usage;
 
 require Exporter;
 
@@ -11,6 +12,7 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(
   parpush
   exec_cssh
+  help
   version
   usage 
   $VERBOSE
@@ -37,6 +39,7 @@ sub create_machine_alias {
   return \%method;
 }
 
+# Return an array with the relevant lines of the config file
 sub read_configfile {
   my $configfile = $_[0];
 
@@ -118,6 +121,15 @@ sub usage {
   warn "$errmsg\n";
   help();
 }
+
+sub help {
+  pod2usage(
+    -verbose => 99, 
+    -sections => "NAME|SYNOPSIS|OPTIONS", 
+    -exitval => 1
+  );
+}
+
 
 ############################################################
 {
