@@ -4,7 +4,6 @@ use warnings;
 
 use Set::Scalar;
 use IO::Select;
-#use Sys::Hostname;
 
 require Exporter;
 
@@ -12,7 +11,6 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(
   parpush
   exec_cssh
-  help 
   version
   usage 
   $VERBOSE
@@ -119,51 +117,6 @@ sub usage {
 
   warn "$errmsg\n";
   help();
-}
-
-sub help {
-  warn << "HELPMSG";
-Usage:
-  $0 [ options ] sourcefile clusterexp1:/path1 clusterexp2:/path2 ...
-
-Cluster expressions like:
-
-  $0 file 'cluster1-machine2:/tmp'
-  $0 file 'cluster1-machine2:/tmp/file_@=.txt'
-  $0 -s '-v' dir/  cluster1+cluster2:/tmp cluster3:/scratch/
-
-are accepted. The macro C<@=> inside a path expands to the name of the machine.
-To transfer several files, protect them with quotes:
-
-  $0 'file1 machine3:file2' cluster1%cluster2:  
-
-it transfer file1 in the local machine and file2 in machine3 
-to the machines in the symmetric difference of clusters cluster1 
-and cluster2.
-
-Valid options:
-
- --configfile file : Configuration file
-
- --scpoptions      : A string with the options for scp.
-                     The default is no options and '-r' if 
-                     sourcefile is adirectory
-
- --program         : A string with the name of the program to use for secure copy
-                     by default is 'scp'
-
- --processes       : Maximum number of concurrent processes
-
- --verbose
-
- --xterm           : runs cssh to the target machines
-
- --help            : this help
-
- --Version
-
-HELPMSG
-  exit(1);
 }
 
 ############################################################

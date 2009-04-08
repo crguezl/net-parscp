@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 use Getopt::Long;
+use Pod::Usage;
 use Net::ParSCP;
 
 # Command line options
@@ -38,4 +39,15 @@ my $okh = parpush(
 
 my @machines = keys %$okh;
 exec_cssh(@machines) if $cssh && (@machines);
+
+sub help {
+  my $doc = __FILE__;
+  $doc =~ s/$/.pod/;
+  pod2usage(
+    -verbose => 1, 
+    -input => $doc,
+    #-section => "NAME|SYNOPSIS|OPTIONS", 
+    -exitval => 1
+  );
+}
 

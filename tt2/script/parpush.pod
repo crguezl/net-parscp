@@ -4,7 +4,31 @@ parpush - Secure transfer a file/directory to a cluster of machines via SSH
 
 =head1 SYNOPSIS
 
+  parpush [options] '*.tar.gz m1:*.pl m2:*.txt' c1%c2:/dir1 c3+c4:/dir2 ... 
+
 [% PROCESS synopsis %]
+
+=head1 OPTIONS
+
+
+ --configfile file : Configuration file
+
+ --scpoptions      : A string with the options for scp.
+                     The default is no options and '-r' if 
+                     sourcefile is adirectory
+
+ --program         : A string with the name of the program to use for secure copy
+                     by default is 'scp'
+
+ --processes       : Maximum number of concurrent processes
+
+ --verbose
+
+ --xterm           : runs cssh to the target machines
+
+ --help            : this help
+
+ --Version
 
 =head1 INSTALLATION
 
@@ -136,28 +160,6 @@ authenticate using your private key
 
 C<parpush> push files and directories across sets of remote machines.
 
-=head2 Options
-
-Valid options are:
-
- --configfile file : Configuration file
-
- --scpoptions      : A string with the options for scp.
-                     The default is no options and '-r' if 
-                     sourcefile is adirectory
-
- --program         : A string with the name of the program to use for secure copy
-                     by default is 'scp'
-
- --processes       : Maximum number of concurrent processes
-
- --verbose
-
- --xterm           : runs cssh to the target machines
-
- --help            : this help
-
- --Version
 
 =head2 Cluster Syntax
 
