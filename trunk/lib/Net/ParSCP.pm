@@ -264,6 +264,9 @@ sub spawn_secure_copies {
     }
   }
 
+  # expand clusters in sourcefile
+
+
   for (@destination) {
 
     my ($clusterexp, $path);
