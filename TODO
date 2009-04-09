@@ -1,3 +1,5 @@
+* -h problem with section(s)?: not reliable
+
 * add option that asks if exists in the remote side  (like -i in cp)
 
 * option -u like in cssh?

@@ -60,6 +60,32 @@ parpush - Secure transfer of files via SSH
 
   # or have the .csshrc file associated with cssh.
 
+
+
+=head1 OPTIONS
+
+
+ --configfile file : Configuration file
+
+ --scpoptions      : A string with the options for scp.
+                     The default is no options and '-r' if 
+                     sourcefile is adirectory
+
+ --program         : A string with the name of the program to use for secure copy
+                     by default is 'scp'
+
+ --processes       : Maximum number of concurrent processes
+
+ --verbose
+
+ --xterm           : runs cssh to the target machines
+
+ --help            : this help
+
+ --Version
+
+=head1 EXAMPLES
+
   # Copy 'sourcefile' to the union of cluster1 and cluster2
 
   $ parpush sourcefile  cluster1+cluster2:/tmp 
@@ -140,29 +166,6 @@ parpush - Secure transfer of files via SSH
   # in the local machine. File 'file.txt' in machine2 will be copied to 
   # file '/tmp/file.txt.machine2' in the local machine
 
-
-
-=head1 OPTIONS
-
-
- --configfile file : Configuration file
-
- --scpoptions      : A string with the options for scp.
-                     The default is no options and '-r' if 
-                     sourcefile is adirectory
-
- --program         : A string with the name of the program to use for secure copy
-                     by default is 'scp'
-
- --processes       : Maximum number of concurrent processes
-
- --verbose
-
- --xterm           : runs cssh to the target machines
-
- --help            : this help
-
- --Version
 
 =head1 INSTALLATION
 
