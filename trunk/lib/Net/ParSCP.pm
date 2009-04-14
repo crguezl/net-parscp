@@ -357,9 +357,7 @@ sub spawn_secure_copies {
       my $set = translate($configfile, $clusterexp, \%cluster, \%method);
       next unless $set;
 
-      for my $m ($set->members) {
-        $sendfiles->($m, $path);
-      } # for ($set->members)
+      $sendfiles->($_, $path) for ($set->members);
     }
     else { # No target cluster: target is the local machine
       ($clusterexp, $path) = ('', $2);
