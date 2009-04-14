@@ -360,7 +360,7 @@ sub spawn_secure_copies {
       $sendfiles->($_, $path) for ($set->members);
     }
     else { # No target cluster: target is the local machine
-      ($clusterexp, $path) = ('', $2);
+      $path = $2;
       $scpoptions .= '-r';
       $sendfiles->($localhost, $path);
     }
