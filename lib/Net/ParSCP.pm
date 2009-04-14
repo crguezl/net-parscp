@@ -5,7 +5,7 @@ use warnings;
 use Set::Scalar;
 use IO::Select;
 use Pod::Usage;
-use Sys::Hostname;
+#use Sys::Hostname;
 
 require Exporter;
 
@@ -297,6 +297,7 @@ sub spawn_secure_copies {
   my $scp = $arg{scp} || 'scp';
   my $scpoptions = $arg{scpoptions} || '';
   my $sourcefile = $arg{sourcefile};
+  my $localhost = $arg{localhost} || 'localhost';
 
   # hash source: keys: source machines. values: lists of source paths for that machine
   my (%pid, %proc, %source);
@@ -315,7 +316,7 @@ sub spawn_secure_copies {
           my $sf = $sm? "$sm:@{$source{$sm}}" : "@{$source{$sm}}"; # $sm: source machine
           my $fp = $cp;                   # $fp: path customized for this source machine
           # what if it is $sm eq '' the localhost?
-          my $sn = $sm? $sm : hostname();
+          my $sn = $sm? $sm : $localhost;
           $fp =~ s/@#/$sn/g;
           warn "Executing system command:\n\t$scp $scpoptions $sf $m:$fp\n" if $VERBOSE;
           my $pid;
@@ -361,16 +362,16 @@ sub spawn_secure_copies {
           $fp =~ s/@#/$sm/g;
           warn "Executing system command:\n\t$scp $scpoptions $sf $fp\n" if $VERBOSE;
           my $pid;
-          $pid{localhost} = $pid = open(my $p, "$scp $scpoptions $sf $fp 2>&1 |");
+          $pid{$localhost} = $pid = open(my $p, "$scp $scpoptions $sf $fp 2>&1 |");
           warn "Can't execute scp $scpoptions $sourcefile $fp", next unless defined($pid);
 
-          $proc{0+$p} = 'localhost';
+          $proc{0+$p} = $localhost;
           $readset->add($p);
         }
       }
       else {
-        $pid{localhost} = open(my $p, "$scp $scpoptions $sourcefile $path 2>&1 |");
-        $proc{0+$p} = 'localhost';
+        $pid{$localhost} = open(my $p, "$scp $scpoptions $sourcefile $path 2>&1 |");
+        $proc{0+$p} = $localhost;
         $readset->add($p);
       }
       next;
