@@ -310,6 +310,8 @@ sub spawn_secure_copies {
   my $sendfiles = sub {
     my ($m, $cp) = @_;
 
+    # @= is a macro and means "the name of the target machine"
+    $cp =~ s/@=/$m/g;
     if ($cp =~ /@#/ && %source) {
       # @# stands for source machine: decompose transfer
       for my $sm (keys %source) {
@@ -356,18 +358,12 @@ sub spawn_secure_copies {
       next unless $set;
 
       for my $m ($set->members) {
-        # @= is a macro and means "the name of the target machine"
-        my $cp = $path;
-        $cp =~ s/@=/$m/g;
-
-        $sendfiles->($m, $cp);
+        $sendfiles->($m, $path);
       } # for ($set->members)
     }
     else { # No target cluster: target is the local machine
       ($clusterexp, $path) = ('', $2);
       $scpoptions .= '-r';
-      $path =~ s/@=/$localhost/g;
-
       $sendfiles->($localhost, $path);
     }
   } # for @destination
