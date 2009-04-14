@@ -228,6 +228,34 @@ sub wait_for_answers {
   return \%result;
 }
 
+# Find out what source machines are involved 
+# %source is returned. machine => [ paths ]
+# key '' represents the local machine
+{
+  my $nowhitenocolons = '(?:[^\s:]|\\\s)+'; # escaped spaces are allowed
+  sub parse_sourcefile {
+    my $sourcefile = shift;
+
+    my @externalmachines = $sourcefile =~ /($nowhitenocolons):($nowhitenocolons)/g;
+    my @localpaths = $sourcefile =~ /(?:^|\s) # begin or space
+                                     ($nowhitenocolons)
+                                     (?:\s|$) # end or space
+                                    /xg;
+    
+    my %source;
+    @{$source{''}} = [ @localpaths ] if @localpaths; # '' is the local machine
+    while (my ($machine, $path) = splice(@externalmachines, 0, 2)) {
+      if (exists $source{$machine} ) {
+        push @{$source{$machine}}, $path;
+      }
+      else {
+        $source{$machine} = [ $path ]
+      }
+    }
+    return %source;
+  }
+}
+
 sub spawn_secure_copies {
   my %arg = @_;
   my $readset = $arg{readset};
@@ -244,25 +272,7 @@ sub spawn_secure_copies {
   my (%pid, %proc, %source);
 
   # @# stands for the source machine: decompose the transfer, one per source machine
-  if ("@destination" =~ /@#/) { 
-    # find out what source machines are involved 
-    my $nowhitenocolons = '(?:[^\s:]|\\\s)+'; # escaped spaces are allowed
-    my @externalmachines = $sourcefile =~ /($nowhitenocolons):($nowhitenocolons)/g;
-    my @localpaths = $sourcefile =~ /(?:^|\s) # begin or space
-                                     ($nowhitenocolons)
-                                     (?:\s|$) # end or space
-                                    /xg;
-    
-    @{$source{''}} = [ @localpaths ] if @localpaths; # '' is the local machine
-    while (my ($machine, $path) = splice(@externalmachines, 0, 2)) {
-      if (exists $source{$machine} ) {
-        push @{$source{$machine}}, $path;
-      }
-      else {
-        $source{$machine} = [ $path ]
-      }
-    }
-  }
+  %source = parse_sourcefile($sourcefile) if "@destination" =~ /@#/;
 
   # expand clusters in sourcefile
 
