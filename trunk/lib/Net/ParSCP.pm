@@ -109,8 +109,12 @@ sub parse_configfile {
 sub version {
   my $errmsg = shift;
 
-  print "$VERSION\n";
-  exit(0);
+  print "Version: $VERSION\n";
+  pod2usage(
+    -verbose => 99, 
+    -sections => "AUTHOR|COPYRIGHT AND LICENSE", 
+    -exitval => 0,
+  );
 }
 
 
