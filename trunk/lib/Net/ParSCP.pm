@@ -310,33 +310,36 @@ sub spawn_secure_copies {
   my $sendfiles = sub {
     my ($m, $cp) = @_;
 
-      if ($cp =~ /@#/ && %source) {
-        # @# stands for source machine: decompose transfer
-        for my $sm (keys %source) {
-          my $sf = $sm? "$sm:@{$source{$sm}}" : "@{$source{$sm}}"; # $sm: source machine
-          my $fp = $cp;                   # $fp: path customized for this source machine
-          # what if it is $sm eq '' the localhost?
-          my $sn = $sm? $sm : $localhost;
-          $fp =~ s/@#/$sn/g;
-          warn "Executing system command:\n\t$scp $scpoptions $sf $m:$fp\n" if $VERBOSE;
-          my $pid;
-          $pid{$m} = $pid = open(my $p, "$scp $scpoptions $sf $m:$fp 2>&1 |");
-          warn "Can't execute scp $scpoptions $sourcefile $m:$fp", next unless defined($pid);
+    if ($cp =~ /@#/ && %source) {
+      # @# stands for source machine: decompose transfer
+      for my $sm (keys %source) {
+        my $sf = $sm? "$sm:@{$source{$sm}}" : "@{$source{$sm}}"; # $sm: source machine
+        my $fp = $cp;                   # $fp: path customized for this source machine
+        # what if it is $sm eq '' the localhost?
+        my $sn = $sm? $sm : $localhost;
+        $fp =~ s/@#/$sn/g;
 
-          $proc{0+$p} = $m;
-          $readset->add($p);
-        }
-      }
-      else {
-        warn "Executing system command:\n\t$scp $scpoptions $sourcefile $m:$cp\n" if $VERBOSE;
-
+        my $target = ($m eq $localhost)? $fp : "$m:$fp";
+        warn "Executing system command:\n\t$scp $scpoptions $sf $target\n" if $VERBOSE;
         my $pid;
-        $pid{$m} = $pid = open(my $p, "$scp $scpoptions $sourcefile $m:$cp 2>&1 |");
-        warn "Can't execute scp $scpoptions $sourcefile $m:$cp", next unless defined($pid);
+        $pid{$m} = $pid = open(my $p, "$scp $scpoptions $sf $target 2>&1 |");
+        warn "Can't execute scp $scpoptions $sourcefile $target", next unless defined($pid);
 
         $proc{0+$p} = $m;
         $readset->add($p);
       }
+    }
+    else {
+      my $target = ($m eq $localhost)? $cp : "$m:$cp";
+      warn "Executing system command:\n\t$scp $scpoptions $sourcefile $target\n" if $VERBOSE;
+
+      my $pid;
+      $pid{$m} = $pid = open(my $p, "$scp $scpoptions $sourcefile $target 2>&1 |");
+      warn "Can't execute scp $scpoptions $sourcefile $m:$cp", next unless defined($pid);
+
+      $proc{0+$p} = $m;
+      $readset->add($p);
+    }
   };
 
   for (@destination) {
@@ -349,44 +352,24 @@ sub spawn_secure_copies {
 
     if ($1) {  # There is a target machine
       ($clusterexp, $path) = split /\s*:\s*/;
+      my $set = translate($configfile, $clusterexp, \%cluster, \%method);
+      next unless $set;
+
+      for my $m ($set->members) {
+        # @= is a macro and means "the name of the target machine"
+        my $cp = $path;
+        $cp =~ s/@=/$m/g;
+
+        $sendfiles->($m, $cp);
+      } # for ($set->members)
     }
-    else { # No target cluster: destiny is the local machine
+    else { # No target cluster: target is the local machine
       ($clusterexp, $path) = ('', $2);
       $scpoptions .= '-r';
+      $path =~ s/@=/$localhost/g;
 
-      if ($path =~ /@#/ && %source) {
-        # @# stands for source machine: decompose transfer
-        for my $sm (keys %source) {
-          my $sf = $sm? "$sm:@{$source{$sm}}" : "@{$source{$sm}}"; # $sm: source machine
-          my $fp = $path;                 # $fp: path customized for this source machine
-          $fp =~ s/@#/$sm/g;
-          warn "Executing system command:\n\t$scp $scpoptions $sf $fp\n" if $VERBOSE;
-          my $pid;
-          $pid{$localhost} = $pid = open(my $p, "$scp $scpoptions $sf $fp 2>&1 |");
-          warn "Can't execute scp $scpoptions $sourcefile $fp", next unless defined($pid);
-
-          $proc{0+$p} = $localhost;
-          $readset->add($p);
-        }
-      }
-      else {
-        $pid{$localhost} = open(my $p, "$scp $scpoptions $sourcefile $path 2>&1 |");
-        $proc{0+$p} = $localhost;
-        $readset->add($p);
-      }
-      next;
+      $sendfiles->($localhost, $path);
     }
-
-    my $set = translate($configfile, $clusterexp, \%cluster, \%method);
-    next unless $set;
-
-    for my $m ($set->members) {
-      # @= is a macro and means "the name of the destiny machine"
-      my $cp = $path;
-      $cp =~ s/@=/$m/g;
-
-      $sendfiles->($m, $cp);
-    } # for ($set->members)
   } # for @destination
 
   return (\%pid, \%proc);
