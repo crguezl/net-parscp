@@ -10,12 +10,14 @@ my $scp = 'scp';
 my $scpoptions = '';
 my $maxprocesses = 8; # control the maximum number of processes at any time
 my $cssh = 0;
+my $localhost = 'localhost';
 
 Getopt::Long::Configure('no_ignore_case');
 my $result = GetOptions(
                 'configfile=s', \$configfile,
                 'scpoptions=s', \$scpoptions,
                 'program=s',    \$scp,
+                'localhost=s',  \$localhost,
                 'processes=i',  \$maxprocesses,
                 'verbose',      \$VERBOSE,
                 'xterm',        \$cssh,
@@ -35,6 +37,7 @@ my $okh = parpush(
   scp         => $scp,
   scpoptions  => $scpoptions,
   sourcefile  => $sourcefile,
+  localhost   => $localhost,
 );
 
 my @machines = keys %$okh;
