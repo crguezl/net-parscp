@@ -1,4 +1,9 @@
-* -h problem with section(s)?: not reliable
+* cluster description file: 
+    number of processors per machine, like beowulf:2
+    dynamic clusters like: those in subnetwork XXX.XXX.XXX that are SSH available (parallel SSH ping)
+    regexp clusters (from a subnetwork or from a cluster)
+
+* -h problem with section(s)?: not reliable Pod::Usage depedence
 
 * add option that asks if exists in the remote side  (like -i in cp)
 
