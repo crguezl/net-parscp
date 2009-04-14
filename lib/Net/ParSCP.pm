@@ -264,6 +264,27 @@ sub wait_for_answers {
   }
 }
 
+# Autodeclare unknown machine identifiers
+sub translate {
+  my ($configfile, $clusterexp, $cluster, $method) = @_;
+
+  my @unknown = non_declared_machines($configfile, $clusterexp, %$cluster);
+  my %unknown = map { $_ => Set::Scalar->new($_)} @unknown;
+  %$cluster = (%$cluster, %unknown); # union
+  %$method = (%$method, %{create_machine_alias(%unknown)});
+
+  $clusterexp =~ s/(\w[\w.\@]*)/$method->{$1}()/g;
+  my $set = eval $clusterexp;
+
+  unless (defined($set) && ref($set) && $set->isa('Set::Scalar')) {
+    $clusterexp =~ s/_\d+_//g;
+    $clusterexp =~ s/[()]//g;
+    warn "Error. Expression '$clusterexp' has errors. Skipping.\n";
+    return;
+  }
+  return $set;
+}
+
 sub spawn_secure_copies {
   my %arg = @_;
   my $readset = $arg{readset};
@@ -323,21 +344,8 @@ sub spawn_secure_copies {
       next;
     }
 
-    # Autodeclare unknown machine identifiers
-    my @unknown = non_declared_machines($configfile, $clusterexp, %cluster);
-    my %unknown = map { $_ => Set::Scalar->new($_)} @unknown;
-    %cluster = (%cluster, %unknown); # union
-    %method = (%method, %{create_machine_alias(%unknown)});
-
-    $clusterexp =~ s/(\w[\w.\@]*)/$method{$1}()/g;
-    my $set = eval $clusterexp;
-
-    unless (defined($set) && ref($set) && $set->isa('Set::Scalar')) {
-      $clusterexp =~ s/_\d+_//g;
-      $clusterexp =~ s/[()]//g;
-      warn "Error. Expression '$clusterexp' has errors. Skipping.\n";
-      next;
-    }
+    my $set = translate($configfile, $clusterexp, \%cluster, \%method);
+    next unless $set;
 
     for my $m ($set->members) {
       # @= is a macro and means "the name of the destiny machine"
