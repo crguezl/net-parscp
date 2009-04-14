@@ -67,7 +67,6 @@ parpush - Secure transfer of files via SSH
 
 =head1 OPTIONS
 
-
  --configfile file : Configuration file
 
  --scpoptions      : A string with the options for scp.
@@ -76,6 +75,10 @@ parpush - Secure transfer of files via SSH
 
  --program         : A string with the name of the program to use for secure copy
                      by default is 'scp'
+
+ --localhost       : a string with the name of the localhost (to be used in 
+                     combination with the @# and @= macros). By default the
+                     name of the localhost is 'localhost'
 
  --processes       : Maximum number of concurrent processes
 
