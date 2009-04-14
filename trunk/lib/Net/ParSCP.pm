@@ -119,14 +119,18 @@ sub usage {
   my $errmsg = shift;
 
   warn "$errmsg\n";
-  help();
+  pod2usage(
+    -verbose => 99, 
+    -sections => "NAME|SYNOPSIS|OPTIONS", 
+    -exitval => 1,
+  );
 }
 
 sub help {
   pod2usage(
     -verbose => 99, 
     -sections => "NAME|SYNOPSIS|OPTIONS", 
-    -exitval => 1
+    -exitval => 0,
   );
 }
 
