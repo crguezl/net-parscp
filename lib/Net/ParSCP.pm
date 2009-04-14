@@ -5,6 +5,7 @@ use warnings;
 use Set::Scalar;
 use IO::Select;
 use Pod::Usage;
+use Sys::Hostname;
 
 require Exporter;
 
@@ -251,7 +252,7 @@ sub wait_for_answers {
                                     /xg;
     
     my %source;
-    @{$source{''}} = [ @localpaths ] if @localpaths; # '' is the local machine
+    $source{''} = \@localpaths if @localpaths; # '' is the local machine
     while (my ($machine, $path) = splice(@externalmachines, 0, 2)) {
       if (exists $source{$machine} ) {
         push @{$source{$machine}}, $path;
@@ -305,6 +306,37 @@ sub spawn_secure_copies {
 
   # expand clusters in sourcefile
 
+  my $sendfiles = sub {
+    my ($m, $cp) = @_;
+
+      if ($cp =~ /@#/ && %source) {
+        # @# stands for source machine: decompose transfer
+        for my $sm (keys %source) {
+          my $sf = $sm? "$sm:@{$source{$sm}}" : "@{$source{$sm}}"; # $sm: source machine
+          my $fp = $cp;                   # $fp: path customized for this source machine
+          # what if it is $sm eq '' the localhost?
+          my $sn = $sm? $sm : hostname();
+          $fp =~ s/@#/$sn/g;
+          warn "Executing system command:\n\t$scp $scpoptions $sf $m:$fp\n" if $VERBOSE;
+          my $pid;
+          $pid{$m} = $pid = open(my $p, "$scp $scpoptions $sf $m:$fp 2>&1 |");
+          warn "Can't execute scp $scpoptions $sourcefile $m:$fp", next unless defined($pid);
+
+          $proc{0+$p} = $m;
+          $readset->add($p);
+        }
+      }
+      else {
+        warn "Executing system command:\n\t$scp $scpoptions $sourcefile $m:$cp\n" if $VERBOSE;
+
+        my $pid;
+        $pid{$m} = $pid = open(my $p, "$scp $scpoptions $sourcefile $m:$cp 2>&1 |");
+        warn "Can't execute scp $scpoptions $sourcefile $m:$cp", next unless defined($pid);
+
+        $proc{0+$p} = $m;
+        $readset->add($p);
+      }
+  };
 
   for (@destination) {
 
@@ -352,33 +384,9 @@ sub spawn_secure_copies {
       my $cp = $path;
       $cp =~ s/@=/$m/g;
 
-      if ($cp =~ /@#/ && %source) {
-        # @# stands for source machine: decompose transfer
-        for my $sm (keys %source) {
-          my $sf = $sm? "$sm:@{$source{$sm}}" : "@{$source{$sm}}"; # $sm: source machine
-          my $fp = $cp;                   # $fp: path customized for this source machine
-          $fp =~ s/@#/$sm/g;
-          warn "Executing system command:\n\t$scp $scpoptions $sf $m:$fp\n" if $VERBOSE;
-          my $pid;
-          $pid{$m} = $pid = open(my $p, "$scp $scpoptions $sf $m:$fp 2>&1 |");
-          warn "Can't execute scp $scpoptions $sourcefile $m:$fp", next unless defined($pid);
-
-          $proc{0+$p} = $m;
-          $readset->add($p);
-        }
-      }
-      else {
-        warn "Executing system command:\n\t$scp $scpoptions $sourcefile $m:$cp\n" if $VERBOSE;
-
-        my $pid;
-        $pid{$m} = $pid = open(my $p, "$scp $scpoptions $sourcefile $m:$cp 2>&1 |");
-        warn "Can't execute scp $scpoptions $sourcefile $m:$cp", next unless defined($pid);
-
-        $proc{0+$p} = $m;
-        $readset->add($p);
-      }
-    }
-  }
+      $sendfiles->($m, $cp);
+    } # for ($set->members)
+  } # for @destination
 
   return (\%pid, \%proc);
 }

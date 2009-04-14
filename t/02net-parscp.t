@@ -1,17 +1,22 @@
 use warnings;
 use strict;
-use Test::More tests => 9;
+use Test::More tests => 12;
 BEGIN { use_ok('Net::ParSCP') };
 
 #########################
 
 SKIP: {
-  skip("Developer test", 8) unless ($ENV{DEVELOPER} && -x "script/parpush" && ($^O =~ /nux$/));
+  skip("Developer test", 11) unless ($ENV{DEVELOPER} && -x "script/parpush" && ($^O =~ /nux$/));
 
      my $output = `script/parpush -v 'orion:.bashrc beowulf:.bashrc' europa:/tmp/bashrc.@# 2>&1`;
      like($output, qr{scp\s+beowulf:.bashrc\s+europa:.tmp.bashrc.beowulf}, 'using macro for source machine: remote target');
      like($output, qr{scp\s+orion:.bashrc europa:/tmp/bashrc.orion}, 'using macro for source machine: remote target');
      ok(!$?, 'macro for source machine: status 0');
+
+     $output = `script/parpush -v MANIFEST  beo-europa:/tmp/@# 2>&1`;
+     ok(!$?, 'macro from local to remote: status 0');
+     like($output, qr{scp  MANIFEST beowulf:/tmp/europa}, 'using macro from local machine: remote target');
+     like($output, qr{scp  MANIFEST orion:/tmp/europa}, 'using macro from local machine: remote target');
 
      $output = `script/parpush -h`;
      ok(!$?, 'help: status 0');
