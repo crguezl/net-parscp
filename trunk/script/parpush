@@ -95,8 +95,8 @@ parpush - Secure transfer of files via SSH
                     runs cssh to the target machines
 
  --dryrun
-                    shows the scp commands that will be issued
-                    but do not transfer the files
+                    It shows the scp commands that will be issued
+                    but does not transfer the files
  --help            
 
  --Version
