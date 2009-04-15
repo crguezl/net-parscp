@@ -51,7 +51,7 @@ SKIP: {
      ok(!$?, 'help: status 0');
      like($output, qr{Name:\s+parpush - Secure transfer of files via SSH},'help:Name');
      like($output, qr{Usage:\s+parpush}, 'help: Usage');
-     like($output, qr{Options:\s+--configfile file :}, 'help:Options');
+     like($output, qr{Options:\s+--configfile file}, 'help:Options');
      like($output, qr{--xterm}, 'help: xterm option');
 }
 
