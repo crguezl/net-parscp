@@ -19,7 +19,7 @@ our @EXPORT = qw(
   $VERBOSE
 );
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 our $VERBOSE = 0;
 
 # Create methods for each defined machine or cluster
@@ -242,6 +242,7 @@ sub wait_for_answers {
 # key '' represents the local machine
 {
   my $nowhitenocolons = '(?:[^\s:]|\\\s)+'; # escaped spaces are allowed
+
   sub parse_sourcefile {
     my $sourcefile = shift;
 
@@ -297,7 +298,18 @@ sub spawn_secure_copies {
   my $scp = $arg{scp} || 'scp';
   my $scpoptions = $arg{scpoptions} || '';
   my $sourcefile = $arg{sourcefile};
-  my $localhost = $arg{localhost} || 'localhost';
+  my $localhost = $arg{localhost};
+  
+  # '' and localhost are synonimous
+  if (exists $localhost->{''}) {
+    $localhost->{localhost} = $localhost->{''} 
+  }
+  elsif (exists $localhost->{localhost}) {
+    $localhost->{''} = $localhost->{localhost};
+  }
+  else { 
+    $localhost->{localhost} =  $localhost->{''} = 'localhost'
+  }
 
   # hash source: keys: source machines. values: lists of source paths for that machine
   my (%pid, %proc, %source);
@@ -311,17 +323,21 @@ sub spawn_secure_copies {
     my ($m, $cp) = @_;
 
     # @= is a macro and means "the name of the target machine"
-    $cp =~ s/@=/$m/g;
+    my $targetname = exists($localhost->{$m}) ? $localhost->{$m} : $m;
+    $cp =~ s/@=/$targetname/g;
+
     if ($cp =~ /@#/ && %source) {
       # @# stands for source machine: decompose transfer
       for my $sm (keys %source) {
         my $sf = $sm? "$sm:@{$source{$sm}}" : "@{$source{$sm}}"; # $sm: source machine
         my $fp = $cp;                   # $fp: path customized for this source machine
+
         # what if it is $sm eq '' the localhost?
-        my $sn = $sm? $sm : $localhost;
+        my $sn = $sm;
+        $sn = $localhost->{$sm} if (exists $localhost->{$sm});
         $fp =~ s/@#/$sn/g;
 
-        my $target = ($m eq $localhost)? $fp : "$m:$fp";
+        my $target = ($m eq 'localhost')? $fp : "$m:$fp";
         warn "Executing system command:\n\t$scp $scpoptions $sf $target\n" if $VERBOSE;
         my $pid;
         $pid{$m} = $pid = open(my $p, "$scp $scpoptions $sf $target 2>&1 |");
@@ -332,7 +348,7 @@ sub spawn_secure_copies {
       }
     }
     else {
-      my $target = ($m eq $localhost)? $cp : "$m:$cp";
+      my $target = ($m eq 'localhost')? $cp : "$m:$cp";
       warn "Executing system command:\n\t$scp $scpoptions $sourcefile $target\n" if $VERBOSE;
 
       my $pid;
@@ -362,7 +378,7 @@ sub spawn_secure_copies {
     else { # No target cluster: target is the local machine
       $path = $2;
       $scpoptions .= '-r';
-      $sendfiles->($localhost, $path);
+      $sendfiles->('localhost', $path);
     }
   } # for @destination
 
