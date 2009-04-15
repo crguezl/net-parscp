@@ -17,10 +17,12 @@ our @EXPORT = qw(
   version
   usage 
   $VERBOSE
+  $DRYRUN
 );
 
 our $VERSION = '0.09';
 our $VERBOSE = 0;
+our $DRYRUN = 0;
 
 # Create methods for each defined machine or cluster
 sub create_machine_alias {
@@ -310,6 +312,7 @@ sub spawn_secure_copies {
   else { 
     $name->{localhost} =  $name->{''} = 'localhost'
   }
+  $VERBOSE++ if $DRYRUN;
 
   # hash source: keys: source machines. values: lists of source paths for that machine
   my (%pid, %proc, %source);
@@ -339,24 +342,28 @@ sub spawn_secure_copies {
 
         my $target = ($m eq 'localhost')? $fp : "$m:$fp";
         warn "Executing system command:\n\t$scp $scpoptions $sf $target\n" if $VERBOSE;
-        my $pid;
-        $pid{$m} = $pid = open(my $p, "$scp $scpoptions $sf $target 2>&1 |");
-        warn "Can't execute scp $scpoptions $sourcefile $target", next unless defined($pid);
+        unless ($DRYRUN) {
+          my $pid;
+          $pid{$m} = $pid = open(my $p, "$scp $scpoptions $sf $target 2>&1 |");
+          warn "Can't execute scp $scpoptions $sourcefile $target", next unless defined($pid);
 
-        $proc{0+$p} = $m;
-        $readset->add($p);
+          $proc{0+$p} = $m;
+          $readset->add($p);
+        }
       }
     }
     else {
       my $target = ($m eq 'localhost')? $cp : "$m:$cp";
       warn "Executing system command:\n\t$scp $scpoptions $sourcefile $target\n" if $VERBOSE;
 
-      my $pid;
-      $pid{$m} = $pid = open(my $p, "$scp $scpoptions $sourcefile $target 2>&1 |");
-      warn "Can't execute scp $scpoptions $sourcefile $m:$cp", next unless defined($pid);
+      unless ($DRYRUN) {
+        my $pid;
+        $pid{$m} = $pid = open(my $p, "$scp $scpoptions $sourcefile $target 2>&1 |");
+        warn "Can't execute scp $scpoptions $sourcefile $m:$cp", next unless defined($pid);
 
-      $proc{0+$p} = $m;
-      $readset->add($p);
+        $proc{0+$p} = $m;
+        $readset->add($p);
+      }
     }
   };
 
@@ -403,7 +410,8 @@ sub parpush {
     %arg,
   );
 
-  my $okh = wait_for_answers($readset, $proc);
+  my $okh = {};
+  $okh = wait_for_answers($readset, $proc) unless $DRYRUN;;
 
   return wantarray? ($okh, $pid) : $okh;
 }

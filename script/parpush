@@ -15,6 +15,7 @@ my %name;
 Getopt::Long::Configure('no_ignore_case');
 my $result = GetOptions(
                 'configfile=s', \$configfile,
+                'dryrun',       \$DRYRUN,
                 'scpoptions=s', \$scpoptions,
                 'program=s',    \$scp,
                 'name=s',       \%name,
@@ -93,6 +94,9 @@ parpush - Secure transfer of files via SSH
  --xterm           
                     runs cssh to the target machines
 
+ --dryrun
+                    shows the scp commands that will be issued
+                    but do not transfer the files
  --help            
 
  --Version
@@ -390,6 +394,7 @@ Cluster expressions aren't supported.
 
 =item * Project C3 L<http://www.csm.ornl.gov/torc/C3/>
 
+=item * L<http://code.google.com/p/net-parscp/>
 
 =back
 
