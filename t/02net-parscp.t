@@ -25,7 +25,7 @@ SKIP: {
 
      $output = `script/parpush -l localhost=orionbashrc -v orion:.bashrc :/tmp/@= 2>&1`;
      ok(!$?, 'macro target from remote to local: status 0');
-     like($output, qr{scp -r orion:.bashrc /tmp/orionbashrc}, 'using -llocalhost=orionbashrc with target macro to local machine');
+     like($output, qr{scp -r orion:.bashrc /tmp/orionbashrc}, 'using -l localhost=orionbashrc with target macro to local machine');
 
      $output = `script/parpush -h`;
      ok(!$?, 'help: status 0');
