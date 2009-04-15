@@ -67,26 +67,33 @@ parpush - Secure transfer of files via SSH
 
 =head1 OPTIONS
 
- --configfile file : Configuration file
+ --configfile file 
+                    Configuration file
 
- --scpoptions      : A string with the options for scp.
+ --scpoptions 'options for scp'
+                     A string with the options for scp.
                      The default is no options and '-r' if 
                      sourcefile is adirectory
 
- --program         : A string with the name of the program to use for secure copy
-                     by default is 'scp'
+ --program '/usr/local/bin/scp'
+                     A string with the name of the program to 
+                     use for secure copy. The default is 'scp'
 
- --name       : a string with the name of the name (to be used in 
-                     combination with the @# and @= macros). By default the
-                     name of the name is 'localhost'
+ --name  machine1=string1 --name machine2=string2
+                    It may appear several times.
+                    The value associated used with machine1
+                    will be used  in the @# and @= macros 
+                    instead the machine name
 
- --processes       : Maximum number of concurrent processes
+ --processes       
+                    Maximum number of concurrent processes
 
  --verbose
 
- --xterm           : runs cssh to the target machines
+ --xterm           
+                    runs cssh to the target machines
 
- --help            : this help
+ --help            
 
  --Version
 
