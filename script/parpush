@@ -10,14 +10,14 @@ my $scp = 'scp';
 my $scpoptions = '';
 my $maxprocesses = 8; # control the maximum number of processes at any time
 my $cssh = 0;
-my %localhost;
+my %name;
 
 Getopt::Long::Configure('no_ignore_case');
 my $result = GetOptions(
                 'configfile=s', \$configfile,
                 'scpoptions=s', \$scpoptions,
                 'program=s',    \$scp,
-                'localhost=s',  \%localhost,
+                'name=s',       \%name,
                 'processes=i',  \$maxprocesses,
                 'verbose',      \$VERBOSE,
                 'xterm',        \$cssh,
@@ -37,7 +37,7 @@ my $okh = parpush(
   scp         => $scp,
   scpoptions  => $scpoptions,
   sourcefile  => $sourcefile,
-  localhost   => \%localhost,
+  name        => \%name,
 );
 
 my @machines = keys %$okh;
@@ -76,9 +76,9 @@ parpush - Secure transfer of files via SSH
  --program         : A string with the name of the program to use for secure copy
                      by default is 'scp'
 
- --localhost       : a string with the name of the localhost (to be used in 
+ --name       : a string with the name of the name (to be used in 
                      combination with the @# and @= macros). By default the
-                     name of the localhost is 'localhost'
+                     name of the name is 'localhost'
 
  --processes       : Maximum number of concurrent processes
 

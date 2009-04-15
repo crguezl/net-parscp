@@ -298,17 +298,17 @@ sub spawn_secure_copies {
   my $scp = $arg{scp} || 'scp';
   my $scpoptions = $arg{scpoptions} || '';
   my $sourcefile = $arg{sourcefile};
-  my $localhost = $arg{localhost};
+  my $name = $arg{name};
   
   # '' and localhost are synonimous
-  if (exists $localhost->{''}) {
-    $localhost->{localhost} = $localhost->{''} 
+  if (exists $name->{''}) {
+    $name->{localhost} = $name->{''} 
   }
-  elsif (exists $localhost->{localhost}) {
-    $localhost->{''} = $localhost->{localhost};
+  elsif (exists $name->{localhost}) {
+    $name->{''} = $name->{localhost};
   }
   else { 
-    $localhost->{localhost} =  $localhost->{''} = 'localhost'
+    $name->{localhost} =  $name->{''} = 'localhost'
   }
 
   # hash source: keys: source machines. values: lists of source paths for that machine
@@ -323,7 +323,7 @@ sub spawn_secure_copies {
     my ($m, $cp) = @_;
 
     # @= is a macro and means "the name of the target machine"
-    my $targetname = exists($localhost->{$m}) ? $localhost->{$m} : $m;
+    my $targetname = exists($name->{$m}) ? $name->{$m} : $m;
     $cp =~ s/@=/$targetname/g;
 
     if ($cp =~ /@#/ && %source) {
@@ -334,7 +334,7 @@ sub spawn_secure_copies {
 
         # what if it is $sm eq '' the localhost?
         my $sn = $sm;
-        $sn = $localhost->{$sm} if (exists $localhost->{$sm});
+        $sn = $name->{$sm} if (exists $name->{$sm});
         $fp =~ s/@#/$sn/g;
 
         my $target = ($m eq 'localhost')? $fp : "$m:$fp";
