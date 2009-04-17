@@ -317,19 +317,9 @@ sub spawn_secure_copies {
   my $scpoptions = $arg{scpoptions} || '';
   my $sourcefile = $arg{sourcefile};
   my $name = $arg{name};
-  
-  # '' and 'localhost' are synonymous
-  make_synonymous($name, '', 'localhost', 'localhost');
-
-  $VERBOSE++ if $DRYRUN;
 
   # hash source: keys: source machines. values: lists of source paths for that machine
   my (%pid, %proc, %source);
-
-  # @# stands for the source machine: decompose the transfer, one per source machine
-  %source = parse_sourcefile($sourcefile) if "@destination" =~ /@#/;
-
-  # expand clusters in sourcefile
 
   my $sendfiles = sub {
     my ($m, $cp) = @_;
@@ -375,6 +365,16 @@ sub spawn_secure_copies {
       }
     }
   };
+
+  # '' and 'localhost' are synonymous
+  make_synonymous($name, '', 'localhost', 'localhost');
+
+  $VERBOSE++ if $DRYRUN;
+
+  # @# stands for the source machine: decompose the transfer, one per source machine
+  %source = parse_sourcefile($sourcefile) if "@destination" =~ /@#/;
+
+  # expand clusters in sourcefile
 
   for (@destination) {
 
