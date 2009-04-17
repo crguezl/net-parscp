@@ -289,6 +289,22 @@ sub translate {
   return $set;
 }
 
+# Gives the same value for entries $entry1 and $entry2 
+# in the has referenced by $rh
+sub make_synonymous {
+  my ($rh, $entry1, $entry2, $defaultvalue) = @_;
+
+  if (exists $rh->{$entry1}) {
+    $rh->{$entry2} = $rh->{$entry1} 
+  }
+  elsif (exists $rh->{$entry2}) {
+    $rh->{$entry1} = $rh->{$entry2};
+  }
+  else { 
+    $rh->{$entry1} =  $rh->{$entry2} = $defaultvalue;
+  }
+}
+
 sub spawn_secure_copies {
   my %arg = @_;
   my $readset = $arg{readset};
@@ -302,16 +318,9 @@ sub spawn_secure_copies {
   my $sourcefile = $arg{sourcefile};
   my $name = $arg{name};
   
-  # '' and localhost are synonimous
-  if (exists $name->{''}) {
-    $name->{localhost} = $name->{''} 
-  }
-  elsif (exists $name->{localhost}) {
-    $name->{''} = $name->{localhost};
-  }
-  else { 
-    $name->{localhost} =  $name->{''} = 'localhost'
-  }
+  # '' and 'localhost' are synonymous
+  make_synonymous($name, '', 'localhost', 'localhost');
+
   $VERBOSE++ if $DRYRUN;
 
   # hash source: keys: source machines. values: lists of source paths for that machine
