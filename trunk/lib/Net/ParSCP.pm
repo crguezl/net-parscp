@@ -290,7 +290,7 @@ sub translate {
 }
 
 # Gives the same value for entries $entry1 and $entry2 
-# in the has referenced by $rh
+# in the hash referenced by $rh
 sub make_synonymous {
   my ($rh, $entry1, $entry2, $defaultvalue) = @_;
 
