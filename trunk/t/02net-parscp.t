@@ -2,7 +2,7 @@ use warnings;
 use strict;
 
 our $totaltests;
-BEGIN { $totaltests = 27; }
+BEGIN { $totaltests = 36; }
 use Test::More tests => $totaltests;
 
 BEGIN { use_ok('Net::ParSCP') };
@@ -53,6 +53,21 @@ SKIP: {
      like($output, qr{Usage:\s+parpush}, 'help: Usage');
      like($output, qr{Options:\s+--configfile file}, 'help:Options');
      like($output, qr{--xterm}, 'help: xterm option');
+
+     # cluster to cluster copy
+     $output = `script/parpush -v beo:.bashrc beo:/tmp/bashrc_at_@# 2>&1`;
+     like($output, qr{scp  beowulf:.bashrc beowulf:/tmp/bashrc_at_beowulf}, 'cluster2cluster: b->b');
+     like($output, qr{scp  europa:.bashrc beowulf:/tmp/bashrc_at_europa}, 'cluster2cluster: e->b');
+     like($output, qr{scp  orion:.bashrc beowulf:/tmp/bashrc_at_orion}, 'cluster2cluster: o->o');
+
+     like($output, qr{scp  beowulf:.bashrc europa:/tmp/bashrc_at_beowulf}, 'cluster2cluster: b->e');
+     like($output, qr{scp  europa:.bashrc europa:/tmp/bashrc_at_europa}, 'cluster2cluster: e->e');
+     like($output, qr{scp  orion:.bashrc europa:/tmp/bashrc_at_orion}, 'cluster2cluster: o->e');
+
+     like($output, qr{scp  beowulf:.bashrc orion:/tmp/bashrc_at_beowulf}, 'cluster2cluster: b->o');
+     like($output, qr{scp  europa:.bashrc orion:/tmp/bashrc_at_europa}, 'cluster2cluster: e->o');
+     like($output, qr{scp  orion:.bashrc orion:/tmp/bashrc_at_orion}, 'cluster2cluster: o->o');
+
 }
 
 
