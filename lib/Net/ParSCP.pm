@@ -256,12 +256,12 @@ sub wait_for_answers {
     
     my %source;
     $source{''} = \@localpaths if @localpaths; # '' is the local machine
-    while (my ($machine, $path) = splice(@externalmachines, 0, 2)) {
-      if (exists $source{$machine} ) {
-        push @{$source{$machine}}, $path;
+    while (my ($clusterexp, $path) = splice(@externalmachines, 0, 2)) {
+      if (exists $source{$clusterexp} ) {
+        push @{$source{$clusterexp}}, $path;
       }
       else {
-        $source{$machine} = [ $path ]
+        $source{$clusterexp} = [ $path ]
       }
     }
     return %source;
@@ -328,7 +328,6 @@ sub spawn_secure_copies {
     my $targetname = exists($name->{$m}) ? $name->{$m} : $m;
     $cp =~ s/@=/$targetname/g;
 
-    if ($cp =~ /@#/ && %source) {
       # @# stands for source machine: decompose transfer
       for my $sm (keys %source) {
         my $sf = $sm? "$sm:@{$source{$sm}}" : "@{$source{$sm}}"; # $sm: source machine
@@ -350,20 +349,6 @@ sub spawn_secure_copies {
           $readset->add($p);
         }
       }
-    }
-    else {
-      my $target = ($m eq 'localhost')? $cp : "$m:$cp";
-      warn "Executing system command:\n\t$scp $scpoptions $sourcefile $target\n" if $VERBOSE;
-
-      unless ($DRYRUN) {
-        my $pid;
-        $pid{$m} = $pid = open(my $p, "$scp $scpoptions $sourcefile $target 2>&1 |");
-        warn "Can't execute scp $scpoptions $sourcefile $m:$cp", next unless defined($pid);
-
-        $proc{0+$p} = $m;
-        $readset->add($p);
-      }
-    }
   };
 
   # '' and 'localhost' are synonymous
@@ -372,9 +357,20 @@ sub spawn_secure_copies {
   $VERBOSE++ if $DRYRUN;
 
   # @# stands for the source machine: decompose the transfer, one per source machine
-  %source = parse_sourcefile($sourcefile) if "@destination" =~ /@#/;
+  %source = parse_sourcefile($sourcefile); #  if "@destination" =~ /@#/;
 
   # expand clusters in sourcefile
+  for my $ce (keys %source) {
+    next unless $ce; # go ahead if local machine
+    my $set = translate($configfile, $ce, \%cluster, \%method);
+
+    # leave it as it is if is a single node
+    next unless $set->members > 1;
+
+    my $paths = $source{$ce};
+    $source{$_} = $paths for $set->members;
+    delete $source{$ce};
+  }
 
   for (@destination) {
 
@@ -386,10 +382,12 @@ sub spawn_secure_copies {
 
     if ($1) {  # There is a target machine
       ($clusterexp, $path) = split /\s*:\s*/;
+
       my $set = translate($configfile, $clusterexp, \%cluster, \%method);
       next unless $set;
 
       $sendfiles->($_, $path) for ($set->members);
+
     }
     else { # No target cluster: target is the local machine
       $path = $2;

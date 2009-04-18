@@ -7,13 +7,13 @@
 
 use warnings;
 use strict;
-use Test::More tests => 15;
+use Test::More tests => 16;
 BEGIN { use_ok('Net::ParSCP') };
 
 #########################
 
 SKIP: {
-  skip("Developer test", 14) unless ($ENV{DEVELOPER} && -x "script/parpush" && ($^O =~ /nux$/));
+  skip("Developer test", 15) unless ($ENV{DEVELOPER} && -x "script/parpush" && ($^O =~ /nux$/));
 
      my $output = `script/parpush -v MANIFEST  beo-chum:/tmp 2>&1`;
      like($output, qr/(identifier \(chum\) does not correspond)|(ssh:.*not known)/, 'Illegal machine name');
@@ -42,7 +42,8 @@ SKIP: {
      system('rm -fR /tmp/.bashrc /tmp/tutu/');
 
      $output = `script/parpush -v 'orion:.bashrc beowulf:tutu/' :/tmp/ 2>&1`;
-     like($output, qr{Executing system command:\s+scp -r orion:.bashrc beowulf:tutu/ /tmp/}, 'remote to local: expected scp command');
+     like($output, qr{Executing system command:\s+scp -r orion:.bashrc\s+/tmp/}, '2 remotes to local: scp command orion');
+     like($output, qr{Executing system command:\s+scp -r beowulf:tutu/\s+/tmp/}, '2 remotes to local: scp command beowulf');
      like($output, qr{localhost output:\s*$}, 'remote to local: no warnings');
      ok(-e '/tmp/.bashrc', 'remote file transferred');
      ok(-x '/tmp/tutu', 'remote dir transferred');
