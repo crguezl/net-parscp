@@ -50,7 +50,7 @@ SKIP: {
      ok(!$?, 'remote to local: status 0');
 
      $output = `script/parpush -h`;
-     like($output, qr{^Name:\s+parpush - Secure transfer of files via SSH}, 'help flag');
+     like($output, qr{^Name:\s+parpush - Secure transfer of files between clusters via SSH}, 'help flag');
 }
 
 
