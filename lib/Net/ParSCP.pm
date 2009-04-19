@@ -20,7 +20,7 @@ our @EXPORT = qw(
   $DRYRUN
 );
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 our $VERBOSE = 0;
 our $DRYRUN = 0;
 
@@ -47,7 +47,7 @@ sub read_configfile {
   my $configfile = $_[0];
 
 
-  if (-r $configfile) {
+  if (defined($configfile) && -r $configfile) {
     open(my $f, $configfile);
     my @desc = <$f>;
     chomp(@desc);
