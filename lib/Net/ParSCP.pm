@@ -341,8 +341,14 @@ sub spawn_secure_copies {
         my $target = ($m eq 'localhost')? $fp : "$m:$fp";
         warn "Executing system command:\n\t$scp $scpoptions $sf $target\n" if $VERBOSE;
         unless ($DRYRUN) {
-          my $pid;
-          $pid{$m} = $pid = open(my $p, "$scp $scpoptions $sf $target 2>&1 |");
+          my $pid = open(my $p, "$scp $scpoptions $sf $target 2>&1 |");
+          if (exists $pid{$m}) {
+            push @{$pid{$m}}, $pid;
+          }
+          else {
+            $pid{$m} = [ $pid ];
+          }
+
           warn "Can't execute scp $scpoptions $sourcefile $target", next unless defined($pid);
 
           $proc{0+$p} = $m;
