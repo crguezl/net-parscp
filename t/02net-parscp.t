@@ -40,12 +40,18 @@ SKIP: {
      like($output, qr{scp  beowulf:.bashrc europa:/tmp/bashrc.BEO}, 'macro for source with 2 -n options: correct command 1');
      like($output, qr{scp  orion:.bashrc europa:/tmp/bashrc.ORION}, 'macro for source with 2 -n options: correct command 2');
      
+     system('rm -fR /tmp/bashrc.BEOW /tmp/bashrc.ORI');
+
+SKIP: {
+     skip('Files /tmp/bashrc.BEOW and /tmp/bashrc.ORI exist', 5) if (-e '/tmp/bashrc.BEOW' || -e '/tmp/bashrc.ORI');
+
      $output = `script/parpush -n orion=ORI -n beowulf=BEOW -v 'orion:.bashrc beowulf:.bashrc' :/tmp/bashrc.@# 2>&1`;
      ok(!$?, 'macro for source with 2 -n options (to local): status 0');
      like($output, qr{scp -r beowulf:.bashrc /tmp/bashrc.BEOW}, 'macro for source with 2 -n options (to local): correct command 1');
      like($output, qr{scp -r orion:.bashrc /tmp/bashrc.ORI}, 'macro for source with 2 -n options (to local): correct command 2');
      ok(-e '/tmp/bashrc.BEOW', '/tmp/bashrc.BEOW remote file transferred');
      ok(-e '/tmp/bashrc.ORI', 'remote file transferred');
+}
 
      $output = `script/parpush -h`;
      ok(!$?, 'help: status 0');
