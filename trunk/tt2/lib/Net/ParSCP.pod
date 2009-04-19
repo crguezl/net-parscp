@@ -1,6 +1,6 @@
 =head1 NAME
 
-Net::ParSCP - Parallel secure copy
+Net::ParSCP - Secure transfer of files between clusters via SSH
 
 =head1 SYNOPSIS
 
