@@ -2,7 +2,7 @@ use warnings;
 use strict;
 
 our $totaltests;
-BEGIN { $totaltests = 45; }
+BEGIN { $totaltests = 47; }
 use Test::More tests => $totaltests;
 
 BEGIN { use_ok('Net::ParSCP') };
@@ -12,7 +12,13 @@ BEGIN { use_ok('Net::ParSCP') };
 SKIP: {
   skip("Developer test", $totaltests-1) unless ($ENV{DEVELOPER} && -x "script/parpush" && ($^O =~ /nux$/));
 
+     rename "$ENV{HOME}/.csshrc", "$ENV{HOME}/csshrc";
      my $output = `script/parpush -v 'orion:.bashrc beowulf:.bashrc' europa:/tmp/bashrc.@# 2>&1`;
+     like($output, qr{scp\s+beowulf:.bashrc\s+europa:.tmp.bashrc.beowulf}, 'using macro for source machine: remote target');
+     like($output, qr{scp\s+orion:.bashrc europa:/tmp/bashrc.orion}, 'using macro for source machine: remote target');
+     rename "$ENV{HOME}/csshrc", "$ENV{HOME}/.csshrc";
+
+     $output = `script/parpush -v 'orion:.bashrc beowulf:.bashrc' europa:/tmp/bashrc.@# 2>&1`;
      like($output, qr{scp\s+beowulf:.bashrc\s+europa:.tmp.bashrc.beowulf}, 'using macro for source machine: remote target');
      like($output, qr{scp\s+orion:.bashrc europa:/tmp/bashrc.orion}, 'using macro for source machine: remote target');
      ok(!$?, 'macro for source machine: status 0');
