@@ -9,11 +9,10 @@ use base 'Exporter';
 our @EXPORT = qw{
   parse_configfile
   translate
+  $VERBOSE
 };
 
-our $VERSION = '0.12';
 our $VERBOSE = 0;
-our $DRYRUN = 0;
 
 # Create methods for each defined machine or cluster
 sub create_machine_alias {
@@ -173,13 +172,35 @@ sub warnundefined {
        " cluster description file '$configfile'.\n";
 }
 
+# expand_ranges
+# Receives a range like cc124..125.a1..2
+# and returns the Set::Scalar object containing
+# cc124.1 cc124.a2 cc125.a1 cc125.a2
+sub expand_ranges {
+  my $cluster = shift;
+
+  my @result;
+  my @processing = ($cluster);
+  while (@processing) {
+    my $c = shift @processing;
+    my ($b, $e) = $c =~ m{(\d+)\.\.+(\d+)};
+    if (defined($b)) {
+      @processing = map { my $d = $c; $d =~ s/$b\.\.+$e/$_/; $d } $b..$e;
+    }
+    else {
+      push @result, $c;
+    }
+  }
+  return Set::Scalar->new(@result);
+}
+
 sub non_declared_machines {
   my $configfile = shift;
   my $clusterexp = shift;
   my %cluster = @_;
 
   my @unknown;
-  my @clusterexp = $clusterexp =~ m{([a-zA-Z_][\w.\@]*)}g;
+  my @clusterexp = $clusterexp =~ m{([\w.\@]+)}g;
   if (@unknown = grep { !exists($cluster{$_}) } @clusterexp) {
     warnundefined($configfile, @unknown) if $VERBOSE;
   }
@@ -191,7 +212,7 @@ sub translate {
 
   # Autodeclare unknown machine identifiers
   my @unknown = non_declared_machines($configfile, $clusterexp, %$cluster);
-  my %unknown = map { $_ => Set::Scalar->new($_)} @unknown;
+  my %unknown = map { $_ => expand_ranges($_)} @unknown;
   %$cluster = (%$cluster, %unknown); # union: add non declared machines
   %$method = (%$method, %{create_machine_alias(%unknown)});
 
