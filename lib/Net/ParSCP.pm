@@ -2,7 +2,6 @@ package Net::ParSCP;
 use strict;
 use warnings;
 
-use Set::Scalar;
 use IO::Select;
 use Pod::Usage;
 use Net::HostLanguage;
@@ -148,6 +147,23 @@ sub wait_for_answers {
     return %source;
   }
 }
+
+# Gives the same value for entries $entry1 and $entry2 
+# in the hash referenced by $rh
+sub make_synonymous {
+  my ($rh, $entry1, $entry2, $defaultvalue) = @_;
+
+  if (exists $rh->{$entry1}) {
+    $rh->{$entry2} = $rh->{$entry1} 
+  }
+  elsif (exists $rh->{$entry2}) {
+    $rh->{$entry1} = $rh->{$entry2};
+  }
+  else { 
+    $rh->{$entry1} =  $rh->{$entry2} = $defaultvalue;
+  }
+}
+
 
 sub spawn_secure_copies {
   my %arg = @_;

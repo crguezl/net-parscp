@@ -9,7 +9,6 @@ use base 'Exporter';
 our @EXPORT = qw{
   parse_configfile
   translate
-  make_synonymous
 };
 
 our $VERSION = '0.12';
@@ -187,16 +186,20 @@ sub non_declared_machines {
   return @unknown;
 }
 
-# Autodeclare unknown machine identifiers
 sub translate {
   my ($configfile, $clusterexp, $cluster, $method) = @_;
 
+  # Autodeclare unknown machine identifiers
   my @unknown = non_declared_machines($configfile, $clusterexp, %$cluster);
   my %unknown = map { $_ => Set::Scalar->new($_)} @unknown;
-  %$cluster = (%$cluster, %unknown); # union
+  %$cluster = (%$cluster, %unknown); # union: add non declared machines
   %$method = (%$method, %{create_machine_alias(%unknown)});
 
+  # Translation: transform user's formula into a valid Perl expression
+  # Cluster names are translated into a call to the associated method
+  # The associated method returns the set of machines for that cluster
   $clusterexp =~ s/(\w[\w.\@]*)/$method->{$1}()/g;
+
   my $set = eval $clusterexp;
 
   unless (defined($set) && ref($set) && $set->isa('Set::Scalar')) {
@@ -206,22 +209,6 @@ sub translate {
     return;
   }
   return $set;
-}
-
-# Gives the same value for entries $entry1 and $entry2 
-# in the hash referenced by $rh
-sub make_synonymous {
-  my ($rh, $entry1, $entry2, $defaultvalue) = @_;
-
-  if (exists $rh->{$entry1}) {
-    $rh->{$entry2} = $rh->{$entry1} 
-  }
-  elsif (exists $rh->{$entry2}) {
-    $rh->{$entry1} = $rh->{$entry2};
-  }
-  else { 
-    $rh->{$entry1} =  $rh->{$entry2} = $defaultvalue;
-  }
 }
 
 1;
