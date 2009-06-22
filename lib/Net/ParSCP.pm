@@ -43,6 +43,28 @@ sub create_machine_alias {
 }
 
 # Return an array with the relevant lines of the config file
+# Configuration dump produced by 'cssh -u'
+# Example of .csshrc file:
+# window_tiling=yes
+# window_tiling_direction=right
+# clusters = beno ben beo bno bco be bo eo et num beat local beow
+# beow = beowulf europa orion tegasaste
+# beno = beowulf europa nereida orion
+# ben = beowulf europa nereida 
+# beo = beowulf europa orion
+# bno = beowulf nereida orion
+# bco = beowulf casnereida orion
+# be  = beowulf europa
+# bo  = beowulf orion
+# eo  =  europa orion
+# et  = europa etsii
+# #     europa          etsii
+# num = 193.145.105.175 193.145.101.246
+# # With @
+# beat  = casiano@beowulf casiano@europa
+# local = local1 local2 local3 
+
+
 sub read_configfile {
   my $configfile = $_[0];
 
@@ -60,17 +82,46 @@ sub read_configfile {
     open(my $f, $configfile);
 
     # We are interested in lines matching 'option = values'
-    my @desc = grep { m{^\s*(\S+)\s*=\s*(.*)\s*} } <$f>;
+    my @desc = grep { m{^\s*(\S+)\s*=\s*(.*)} } <$f>;
     close($f);
+
+    my %config = map { m{^\s*(\S+)\s*=\s*(.*)} } @desc;
+
+    # From cssh man page:
+    # extra_cluster_file = <null>
+    # Define an extra cluster file in the format of /etc/clusters.  
+    # Multiple files can be specified, seperated by commas.  Both ~ and $HOME
+    # are acceptable as a to reference the users home directory, i.e.
+    # extra_cluster_file = ~/clusters, $HOME/clus
+    # 
+    if (defined($config{extra_cluster_file})) {
+      $config{extra_cluster_file} =~ s/(\~|\$HOME)/$ENV{HOME}/ge;
+      my @extra = split /\s*,\s*/, $config{extra_cluster_file};
+      for my $extra (@extra) {
+        if (-r $extra) {
+          open(my $e, $extra);
+          push @desc, grep { 
+                        my $def = $_ =~ m{^\s*(\S+)\s*=\s*(.*)};
+                        my $cl = $1;
+                        $config{clusters} .= " $cl" if ($cl && $config{clusters} !~ /\b$cl\b/);
+                        $def;
+                      } <$e>;
+          close($e);
+        }
+      }
+    }
     chomp(@desc);
 
-    my %config = map { m{^\s*(\S+)\s*=\s*(.*)\s*} } @desc;
-
     # Get the clusters. It starts 'cluster = ... '
+    #    clusters = beno ben beo bno bco be bo eo et num beat local beow
     my $regexp = $config{clusters};
 
-    # create regexp (^beo\s*=)|(^be\s*=)
+    # We create a regexp to search for the clusters definitions.
+    # The regexp is the "or" of the cluster names followed by '='
+    #            (^beo\s*=)|(^be\s*=) | ...
     $regexp =~ s/\s*(\S+)\s*/(^$1\\s*=)|/g;
+    # (beno\s*=) | (ben\s*=) | ... | (beow\s*=) |
+    # Chomp the final or '|'
     $regexp =~ s/[|]\s*$//;
 
     # Select the lines that correspond to clusters
