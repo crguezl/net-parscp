@@ -20,7 +20,6 @@ our @EXPORT = qw(
 );
 
 our $VERSION = '0.12';
-our $VERBOSE = 0;
 our $DRYRUN = 0;
 
 ############################################################
@@ -242,11 +241,11 @@ sub spawn_secure_copies {
 
     my ($clusterexp, $path);
     unless (/^([^:]*):([^:]*)$/) {
-      warn "Error. Destination '$_' must have no more than one colon (:). Skipping transfer.\n";
+      warn "Error. Destination '$_' must have just one colon (:). Skipping transfer.\n";
       next;
     }
 
-    if ($1) {  # There is a target machine
+    if ($1) {  # There is a target cluster expression
       ($clusterexp, $path) = split /\s*:\s*/;
 
       my $set = translate($configfile, $clusterexp, \%cluster, \%method);
