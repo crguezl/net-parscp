@@ -135,11 +135,19 @@ sub parse_configfile {
 
     my @members = split /\s+/, $members;
 
+    my @result;
     for my $m (@members) {
-      die "Error in configuration file $configfile invalid name $m" unless $m =~ /^[\@\w.]+$/;
-      $cluster{$m} = Set::Scalar->new($m) unless exists $cluster{$m};
+      die "Error in configuration file $_[0] invalid name $m" unless $m =~ /^[\@\w.]+$/;
+
+      # Net::ParSCP admits cluster ranges as cc137..139
+      my $range = expand_ranges($m);
+      push @result, $range->members;
+      for my $r ($range->members) {
+        $cluster{$r} = Set::Scalar->new($r) unless exists $cluster{$r};
+      }
+
     }
-    $cluster{$cluster} = Set::Scalar->new(@members);
+    $cluster{$cluster} = Set::Scalar->new(@result);
   }
 
   # keys: machine and cluster names; values: name of the associated method 
@@ -173,9 +181,10 @@ sub warnundefined {
 }
 
 # expand_ranges
-# Receives a range like cc124..125.a1..2
-# and returns the Set::Scalar object containing
-# cc124.1 cc124.a2 cc125.a1 cc125.a2
+# Receives a range (num...num) specifying a cluster like: 
+#            cc124..125.a1..2
+# and returns the Set::Scalar object containing the elements:
+#     cc124.a1 cc124.a2 cc125.a1 cc125.a2
 sub expand_ranges {
   my $cluster = shift;
 
