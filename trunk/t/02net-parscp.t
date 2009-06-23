@@ -18,7 +18,8 @@ SKIP: {
      like($output, qr{scp\s+orion:.bashrc europa:/tmp/bashrc.orion}, 'using macro for source machine: remote target');
      rename "$ENV{HOME}/csshrc", "$ENV{HOME}/.csshrc";
 
-     $output = `script/parpush -v -d Makefile virtual:/tmp/ 2>&1`;
+     # Range
+     $output = `script/parpush -v -d Makefile 127.0.0.1..5:/tmp/ 2>&1`;
      my $ok = $output =~  m{
             scp\s+Makefile\s+127.0.0.3:/tmp/.+
             scp\s+Makefile\s+127.0.0.1:/tmp/.+
