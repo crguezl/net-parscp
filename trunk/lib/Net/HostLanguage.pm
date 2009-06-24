@@ -32,7 +32,7 @@ sub create_machine_alias {
   return \%method;
 }
 
-# read_configfile: Return an array with the relevant lines of the config file
+# sub read_csshrc
 # Configuration dump produced by 'cssh -u'
 # Example of .csshrc file:
 # window_tiling=yes
@@ -53,6 +53,59 @@ sub create_machine_alias {
 # # With @
 # beat  = casiano@beowulf casiano@europa
 # local = local1 local2 local3 
+sub read_csshrc {
+  my $configfile = shift;
+
+  open(my $f, $configfile);
+
+  # We are interested in lines matching 'option = values'
+  my @desc = grep { m{^\s*(\S+)\s*=\s*(.*)} } <$f>;
+  close($f);
+
+  my %config = map { m{^\s*(\S+)\s*=\s*(.*)} } @desc;
+
+  # From cssh man page:
+  # extra_cluster_file = <null>
+  # Define an extra cluster file in the format of /etc/clusters.  
+  # Multiple files can be specified, seperated by commas.  Both ~ and $HOME
+  # are acceptable as a to reference the users home directory, i.e.
+  # extra_cluster_file = ~/clusters, $HOME/clus
+  # 
+  if (defined($config{extra_cluster_file})) {
+    $config{extra_cluster_file} =~ s/(\~|\$HOME)/$ENV{HOME}/ge;
+    my @extra = split /\s*,\s*/, $config{extra_cluster_file};
+    for my $extra (@extra) {
+      if (-r $extra) {
+        open(my $e, $extra);
+        push @desc, grep { 
+                      my $def = $_ =~ m{^\s*(\S+)\s*=\s*(.*)};
+                      my $cl = $1;
+                      $config{clusters} .= " $cl" if ($cl && $config{clusters} !~ /\b$cl\b/);
+                      $def;
+                    } <$e>;
+        close($e);
+      }
+    }
+  }
+  chomp(@desc);
+
+  # Get the clusters. It starts 'cluster = ... '
+  #    clusters = beno ben beo bno bco be bo eo et num beat local beow
+  my $regexp = $config{clusters};
+
+  # We create a regexp to search for the clusters definitions.
+  # The regexp is the "or" of the cluster names followed by '='
+  #            (^beo\s*=)|(^be\s*=) | ...
+  $regexp =~ s/\s*(\S+)\s*/(^$1\\s*=)|/g;
+  # (beno\s*=) | (ben\s*=) | ... | (beow\s*=) |
+  # Chomp the final or '|'
+  $regexp =~ s/[|]\s*$//;
+
+  # Select the lines that correspond to clusters
+  return grep { m{$regexp}x } @desc;
+}
+
+# read_configfile: Return an array with the relevant lines of the config file
 sub read_configfile {
   my $configfile = $_[0];
 
@@ -65,55 +118,7 @@ sub read_configfile {
 
   # Configuration file not found. Try with ~/.csshrc of cssh
   $configfile = $_[0] = "$ENV{HOME}/.csshrc";
-  if (-r $configfile) {
-    open(my $f, $configfile);
-
-    # We are interested in lines matching 'option = values'
-    my @desc = grep { m{^\s*(\S+)\s*=\s*(.*)} } <$f>;
-    close($f);
-
-    my %config = map { m{^\s*(\S+)\s*=\s*(.*)} } @desc;
-
-    # From cssh man page:
-    # extra_cluster_file = <null>
-    # Define an extra cluster file in the format of /etc/clusters.  
-    # Multiple files can be specified, seperated by commas.  Both ~ and $HOME
-    # are acceptable as a to reference the users home directory, i.e.
-    # extra_cluster_file = ~/clusters, $HOME/clus
-    # 
-    if (defined($config{extra_cluster_file})) {
-      $config{extra_cluster_file} =~ s/(\~|\$HOME)/$ENV{HOME}/ge;
-      my @extra = split /\s*,\s*/, $config{extra_cluster_file};
-      for my $extra (@extra) {
-        if (-r $extra) {
-          open(my $e, $extra);
-          push @desc, grep { 
-                        my $def = $_ =~ m{^\s*(\S+)\s*=\s*(.*)};
-                        my $cl = $1;
-                        $config{clusters} .= " $cl" if ($cl && $config{clusters} !~ /\b$cl\b/);
-                        $def;
-                      } <$e>;
-          close($e);
-        }
-      }
-    }
-    chomp(@desc);
-
-    # Get the clusters. It starts 'cluster = ... '
-    #    clusters = beno ben beo bno bco be bo eo et num beat local beow
-    my $regexp = $config{clusters};
-
-    # We create a regexp to search for the clusters definitions.
-    # The regexp is the "or" of the cluster names followed by '='
-    #            (^beo\s*=)|(^be\s*=) | ...
-    $regexp =~ s/\s*(\S+)\s*/(^$1\\s*=)|/g;
-    # (beno\s*=) | (ben\s*=) | ... | (beow\s*=) |
-    # Chomp the final or '|'
-    $regexp =~ s/[|]\s*$//;
-
-    # Select the lines that correspond to clusters
-    return grep { m{$regexp}x } @desc;
-  }
+  return read_csshrc($configfile) if (-r $configfile);
 
   warn("Warning. Configuration file not found!\n") if $VERBOSE;
 
