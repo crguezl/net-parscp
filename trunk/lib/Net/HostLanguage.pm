@@ -120,12 +120,21 @@ sub read_configfile {
   $configfile = $_[0] = "$ENV{HOME}/.csshrc";
   return read_csshrc($configfile) if (-r $configfile);
 
+  # Configuration file not found. Try with /etc/clusters of cssh
+  $configfile = $_[0] = "/etc/clusters";
+  return read_csshrc($configfile) if (-r $configfile);
+
   warn("Warning. Configuration file not found!\n") if $VERBOSE;
 
   return ();
 }
 
 ############################################################
+# limitation: label expansion isn't allowed. Like in:
+# clusters = <tag1> <tag2> <tag3>
+#                 <tag1> = host1 host2 host3
+#                 <tag2> = user@host4 user@host5 host6
+#                 <tag3> = <tag1> <tag2>
 sub parse_configfile {
   my $configfile = $_[0];
   my %cluster;
