@@ -105,16 +105,25 @@ sub read_csshrc {
   return grep { m{$regexp}x } @desc;
 }
 
+sub slurp {
+  my $configfile = shift;
+
+  open(my $f, $configfile);
+  my @desc = <$f>;
+  chomp(@desc);
+
+  return @desc;
+}
+
 # read_configfile: Return an array with the relevant lines of the config file
 sub read_configfile {
   my $configfile = $_[0];
 
-  if (defined($configfile) && -r $configfile) {
-    open(my $f, $configfile);
-    my @desc = <$f>;
-    chomp(@desc);
-    return @desc;
-  }
+  return slurp($configfile) if (defined($configfile) && -r $configfile);
+
+  # Configuration file not found. Try with ~/.clustersrc of cssh
+  $configfile = $_[0] = "$ENV{HOME}/.clustersrc";
+  return slurp($configfile) if (defined($configfile) && -r $configfile);
 
   # Configuration file not found. Try with ~/.csshrc of cssh
   $configfile = $_[0] = "$ENV{HOME}/.csshrc";
@@ -248,7 +257,7 @@ sub translate {
 
   unless (defined($set) && ref($set) && $set->isa('Set::Scalar')) {
     $clusterexp =~ s/_\d+_//g;
-    $clusterexp =~ s/[()]//g;
+    $clusterexp =~ s/()//g;
     warn "Error. Expression '$clusterexp' has errors. Skipping.\n";
     return;
   }
