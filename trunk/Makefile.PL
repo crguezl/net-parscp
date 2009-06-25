@@ -17,7 +17,6 @@ if (defined($ENV{DEVELOPER}) && ($ENV{DEVELOPER} eq 'casiano')) {
 }
 
 my @exe_files = map { "script/$_" } qw{parpush};
-my @LIBS = ( 'lib/Net/ParSCP.pm' );
 
 WriteMakefile(
     NAME              => 'Net::ParSCP',
