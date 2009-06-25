@@ -48,11 +48,22 @@ __END__
 
 =head1 NAME
 
-parpush - Secure transfer of files between clusters via SSH
+parpush - Secure parallel transfer of files between clusters via SSH
 
 =head1 SYNOPSIS
 
-  parpush [options] '*.tar.gz m1:*.pl m2:*.txt' c1%c2:/dir1 c3+c4:/dir2 ... 
+  parpush [options] 'sourcefile' cluster1:path1 cluster2:path2 ... 
+
+  # For instance, the command:
+
+    parpush somefile 127.0.0.1..5:/tmp/somefile.@=
+
+  # is equivalent to:
+  #         scp  somefile 127.0.0.1:/tmp/somefile.127.0.0.1
+  #         scp  somefile 127.0.0.2:/tmp/somefile.127.0.0.2
+  #         scp  somefile 127.0.0.3:/tmp/somefile.127.0.0.3
+  #         scp  somefile 127.0.0.4:/tmp/somefile.127.0.0.4
+  #         scp  somefile 127.0.0.5:/tmp/somefile.127.0.0.5
 
   # You need to set first a configuration file describing the
   # set of clusters: 
@@ -65,49 +76,68 @@ parpush - Secure transfer of files between clusters via SSH
       # same as range = cc100 cc101 cc102
       range = cc100..102
 
-  # or have the cluster defined in the $HOME/.csshrc file associated with cssh.
-
-
-
 =head1 OPTIONS
 
- --configfile file 
-                    File describing the clusters. If not specified
-                    parpush will look for the files:
-                       $HOME/.clustersrc
-                       $HOME/.csshrc
-                       /etc/clusters
+=over
 
+=item * C<--configfile file>
+File describing the clusters. If not specified
+parpush will look for the files:
 
- --scpoptions 'options for scp'
-                     A string with the options for scp.
-                     The default is no options and '-r' if 
-                     sourcefile is adirectory
+  $HOME/.clustersrc
+  $HOME/.csshrc
+  /etc/clusters
 
- --program '/usr/local/bin/scp'
-                     A string with the name of the program to 
-                     use for secure copy. The default is 'scp'
+in this order
 
- --name  machine1=string1 --name machine2=string2
-                    It may appear several times.
-                    The value associated used with machine1
-                    will be used  in the @# and @= macros 
-                    instead the machine name. 
+=item * C<--scpoptions 'options for scp'>
 
- --processes       
-                    Maximum number of concurrent processes
+A string with the options for C<scp>.
+The default is no options and C<-r> if 
+sourcefile is a directory
 
- --verbose
+=item * C<--program '/usr/local/bin/scp'>
 
- --xterm           
-                    runs cssh to the target machines
+A string with the name of the program to 
+use for secure copy. The default is 'scp'
 
- --dryrun
-                    It shows the scp commands that will be issued
-                    but does not transfer the files
- --help            
+=item * C<--name  machine1=string1 --name machine2=string2>
 
- --Version
+It may appear several times.
+The value associated used with C<machine1>
+will be used  in the C<@#> and C<@=> macros 
+instead the machine name. 
+See an example. The command:
+
+  $ parpush -v -n m1=o -n m2=b -n m3=e file m1+m2+m3:/tmp/file.@=
+
+is equivalent to:
+
+        scp  file m1/tmp/file.o
+        scp  file m2/tmp/file.b
+        scp  file m1/tmp/file.e
+
+=item * C<--processes>       
+
+Maximum number of concurrent processes
+
+=item * C<--verbose>
+
+=item * C<--xterm>
+
+Runs C<cssh> to the target machines
+
+=item * C<--dryrun>
+
+It shows the C<scp> commands that will be issued
+but does not transfer the files
+
+=item * C<--help>            
+
+=item * C<--Version>
+
+=back
+
 
 =head1 EXAMPLES
 
@@ -222,7 +252,7 @@ Then issue the usual commands (or use C<cpan>):
 C<parpush> push files and directories across sets of remote machines.
 
 
-=head2 Cluster Syntax
+=head2 Syntax of Cluster Description Files
 
 Unless the option C<--configfile> is specified
 C<parpush> will look for a filename named C<~/.clusterrc> in the home
@@ -246,7 +276,20 @@ is equivalent to:
 See C<man cssh> to find out how to describe a cluster in the
 C<~/.csshrc> file.
 
-=head2 Cluster Expressions
+=head2 C<parpush> Syntax
+
+When calling C<parpush> you have to specify the source and the targets.
+Each target is split in two parts: the cluster description and the 
+path. You have to write a colon for any target, even if the target is the local host.
+This behavior differs from C<scp>.
+in the example below C<'file.txt'> in C<machine1> will be copied to 
+file C<'/tmp/file.txt.machine1'> in the local machine. File C<'file.txt'> in C<machine2> 
+will be copied to file C<'/tmp/file.txt.machine2'> in the local machine
+
+  $ parpush 'machine1..2:file.txt' :/tmp/file_txt.@#  
+
+
+=head2 The Syntax of Cluster Expressions
 
 =over 2
 
@@ -329,7 +372,7 @@ you have to:
 
 =item * Generate a public key use the C<ssh-keygen> utility. For example:
 
-  local.machine$ ssh-keygen -t rsa -N ''
+  local.machine$ ssh-keygen -t dsa -N ''
 
 The option C<-t> selects the type of key you want to generate.
 There are three types of keys: I<rsa1>, I<rsa> and I<dsa>.
@@ -338,18 +381,19 @@ indicates that no passphrase will be used. This is useful when used
 with key restrictions or when dealing with cron jobs, batch 
 commands and automatic processing which is the context in which this 
 module was designed.
+By default, in OpenSSH, your identification will be saved in a file C</home/user/.ssh/id_dsa>.
+Your public key will be saved in C</home/user/.ssh/id_dsa.pub>.
+
+=item *
 If still you don't like to have a private key without passphrase, 
 provide a passphrase and use C<ssh-agent> 
 to avoid the inconvenience of typing the passphrase each time. 
 C<ssh-agent> is a program you run once per login session and load your keys into.
-Keys are added to the C<ssh-agent> using C<ssh-add>. 
+Keys are added to the C<ssh-agent> using the program C<ssh-add>. 
 From that moment on, any C<ssh> client will contact C<ssh-agent>
 and no more passphrase typing will be needed.
 Use the program C<keychain> to manage the communication with the agent from different 
 sessions.
-
-By default, your identification will be saved in a file C</home/user/.ssh/id_rsa>.
-Your public key will be saved in C</home/user/.ssh/id_rsa.pub>.
 
 =item * Once you have generated a key pair, you must install the public key on the 
 remote machine. To do it, append the public component of the key in
@@ -367,7 +411,8 @@ If the C<ssh-copy-id> script is available, you can do it using:
 
 Alternatively you can write the following command:
 
-  $ ssh remote.machine "umask 077; cat >> .ssh/authorized_keys" < /home/user/.ssh/id_rsa.pub
+  $ ssh remote.machine "umask 077; cat >> .ssh/authorized_keys" \
+                                  < /home/user/.ssh/id_rsa.pub
 
 The C<umask> command is needed since the SSH server will refuse to 
 read a C</home/user/.ssh/authorized_keys> files which have loose permissions.
@@ -418,8 +463,8 @@ differs from your  I<login> name in the local machine, you don't have to specify
 I<port> if it isn't 22, etc. This is the I<recommended> way to work with C<GRID::Machine>.
 Avoid cluttering the constructor C<new>.
 
-=item * Once the public key is installed on the server you should be able to
-authenticate using your private key
+=item * Once the public key is installed on the server and the key added to the agent,
+you should be able to authenticate using your private key
 
   $ ssh remote.machine
   Linux remote.machine 2.6.15-1-686-smp #2 SMP Mon Mar 6 15:34:50 UTC 2006 i686

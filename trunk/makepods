@@ -23,7 +23,7 @@ TT2PODS=$(addprefix tt2/,$(PODS))
 pods: pod
 pod: ${PODS}
 
-script/parpush.pod: tt2/script/parpush.pod ${COMPONENTS}
+#script/parpush.pod: tt2/script/parpush.pod ${COMPONENTS}
 lib/Net/ParSCP.pod: tt2/lib/Net/ParSCP.pod ${COMPONENTS}
 
 %.pod:$(addprefix tt2/,$@) ${COMPONENTS}
